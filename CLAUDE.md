@@ -39,3 +39,20 @@ Each subproject has its own CLAUDE.md with detailed guidance.
 - All writing must be in English
 - When using WebSearch, always use the current date
 - For ambiguous instructions, confirm understanding with the user before proceeding
+
+## Commit Message Format
+
+Use structured format for session continuity:
+
+```
+[<phase-id>/<step-id>] <short description>
+
+## Done
+- What was accomplished
+
+## Notes
+- Context, decisions, gotchas
+
+## Next
+- [ ] Upcoming tasks
+```
