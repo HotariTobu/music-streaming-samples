@@ -5,7 +5,9 @@ import { CatalogSearch } from "./components/CatalogSearch";
 import { Charts } from "./components/Charts";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { UserLibrary } from "./components/UserLibrary";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { MusicKitProvider, useMusicKit } from "./contexts/MusicKitContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import "./index.css";
 
 type Tab = "search" | "charts" | "library" | "playback";
@@ -17,12 +19,15 @@ function AppContent() {
   // Not configured - show credentials form
   if (!isConfigured) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-lg">
+          <div className="absolute top-4 right-4">
+            <ThemeToggle />
+          </div>
           <div className="text-center mb-8">
             <div className="text-6xl mb-4">🎵</div>
-            <h1 className="text-3xl font-bold text-white mb-2">Apple Music API</h1>
-            <p className="text-zinc-400">Enter your Apple Developer credentials to get started</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Apple Music API</h1>
+            <p className="text-muted-foreground">Enter your Apple Developer credentials to get started</p>
           </div>
           <CredentialsForm onConfigured={checkCredentials} />
         </div>
@@ -33,11 +38,11 @@ function AppContent() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-8 max-w-md text-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-8 max-w-md text-center">
           <div className="text-5xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-red-400 mb-2">Error</h2>
-          <p className="text-zinc-400">{error}</p>
+          <h2 className="text-xl font-bold text-destructive mb-2">Error</h2>
+          <p className="text-muted-foreground">{error}</p>
         </div>
       </div>
     );
@@ -46,10 +51,10 @@ function AppContent() {
   // Loading MusicKit
   if (!isReady) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-zinc-400">Initializing MusicKit...</p>
+          <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">Initializing MusicKit...</p>
         </div>
       </div>
     );
@@ -63,24 +68,25 @@ function AppContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-zinc-800">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🎵</span>
               <div>
                 <h1 className="font-bold text-lg">Apple Music API</h1>
-                <p className="text-xs text-zinc-500">MusicKit JS Sample</p>
+                <p className="text-xs text-muted-foreground">MusicKit JS Sample</p>
               </div>
             </div>
 
-            {/* Auth Status */}
+            {/* Right side controls */}
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${isAuthorized ? "bg-green-500" : "bg-amber-500"}`} />
-                <span className="text-sm text-zinc-400">
+                <span className="text-sm text-muted-foreground">
                   {isAuthorized ? "Authorized" : "Not Authorized"}
                 </span>
               </div>
@@ -88,7 +94,7 @@ function AppContent() {
                 <Button
                   onClick={authorize}
                   size="sm"
-                  className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600"
+                  className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
                 >
                   Authorize
                 </Button>
@@ -99,7 +105,7 @@ function AppContent() {
       </header>
 
       {/* Navigation */}
-      <nav className="sticky top-[73px] z-40 bg-black/80 backdrop-blur-lg border-b border-zinc-800">
+      <nav className="sticky top-[73px] z-40 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex gap-1 py-2 overflow-x-auto">
             {tabs.map(({ id, label, icon, requiresAuth }) => (
@@ -109,8 +115,8 @@ function AppContent() {
                 className={`
                   flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
                   ${activeTab === id
-                    ? "bg-zinc-800 text-white"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                   }
                 `}
               >
@@ -128,22 +134,22 @@ function AppContent() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-6">
         {/* API Features Info */}
-        <div className="mb-6 p-4 bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-xl border border-zinc-700">
+        <div className="mb-6 p-4 bg-card rounded-xl border border-border">
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-zinc-300">Public API (No Auth)</span>
-              <span className="text-zinc-500">Search, Charts</span>
+              <span className="text-foreground">Public API (No Auth)</span>
+              <span className="text-muted-foreground">Search, Charts</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-zinc-300">User API (Auth Required)</span>
-              <span className="text-zinc-500">Library, Playlists, Recent</span>
+              <span className="text-foreground">User API (Auth Required)</span>
+              <span className="text-muted-foreground">Library, Playlists, Recent</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-pink-500" />
-              <span className="text-zinc-300">Playback</span>
-              <span className="text-zinc-500">Preview (30s) or Full (with subscription)</span>
+              <span className="text-foreground">Playback</span>
+              <span className="text-muted-foreground">Preview (30s) or Full (with subscription)</span>
             </div>
           </div>
         </div>
@@ -156,15 +162,15 @@ function AppContent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 py-6 mt-8">
-        <div className="max-w-6xl mx-auto px-4 text-center text-zinc-500 text-sm">
+      <footer className="border-t border-border py-6 mt-8">
+        <div className="max-w-6xl mx-auto px-4 text-center text-muted-foreground text-sm">
           <p>Apple Music API Sample with MusicKit JS v3</p>
           <p className="mt-1">
             <a
               href="https://developer.apple.com/documentation/musickitjs"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-pink-400 hover:text-pink-300"
+              className="text-primary hover:text-primary/80"
             >
               MusicKit JS Documentation
             </a>
@@ -177,9 +183,11 @@ function AppContent() {
 
 export function App() {
   return (
-    <MusicKitProvider>
-      <AppContent />
-    </MusicKitProvider>
+    <ThemeProvider>
+      <MusicKitProvider>
+        <AppContent />
+      </MusicKitProvider>
+    </ThemeProvider>
   );
 }
 

@@ -112,7 +112,7 @@ export function CatalogSearch() {
       {/* Search Input */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             🔍
           </span>
           <Input
@@ -120,13 +120,13 @@ export function CatalogSearch() {
             value={state.query}
             onChange={(e) => setState((prev) => ({ ...prev, query: e.target.value }))}
             onKeyDown={handleKeyDown}
-            className="pl-10 bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-500 h-12"
+            className="pl-10 h-12"
           />
         </div>
         <Button
           onClick={search}
           disabled={state.loading || !state.query.trim()}
-          className="h-12 px-6 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600"
+          className="h-12 px-6 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
         >
           {state.loading ? "..." : "Search"}
         </Button>
@@ -141,8 +141,8 @@ export function CatalogSearch() {
             className={`
               px-4 py-2 rounded-full text-sm font-medium transition-all
               ${state.type === type
-                ? "bg-white text-black"
-                : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                ? "bg-foreground text-background"
+                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
               }
             `}
           >
@@ -154,7 +154,7 @@ export function CatalogSearch() {
 
       {/* Error */}
       {state.error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
           {state.error}
         </div>
       )}
@@ -167,12 +167,12 @@ export function CatalogSearch() {
               <div
                 key={song.id}
                 onClick={() => playSong(song)}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer group transition-colors"
+                className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
               >
-                <span className="w-6 text-center text-zinc-500 text-sm group-hover:hidden">
+                <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
                   {idx + 1}
                 </span>
-                <span className="w-6 text-center hidden group-hover:block text-white">
+                <span className="w-6 text-center hidden group-hover:block text-foreground">
                   ▶
                 </span>
                 {song.attributes.artwork ? (
@@ -182,20 +182,20 @@ export function CatalogSearch() {
                     className="w-12 h-12 rounded shadow-lg"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded bg-zinc-700 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
                     ♫
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{song.attributes.name}</p>
-                  <p className="text-sm text-zinc-400 truncate">
+                  <p className="font-medium text-foreground truncate">{song.attributes.name}</p>
+                  <p className="text-sm text-muted-foreground truncate">
                     {song.attributes.artistName}
                   </p>
                 </div>
-                <div className="text-sm text-zinc-500 hidden sm:block">
+                <div className="text-sm text-muted-foreground hidden sm:block">
                   {song.attributes.albumName}
                 </div>
-                <div className="text-sm text-zinc-500 w-12 text-right">
+                <div className="text-sm text-muted-foreground w-12 text-right">
                   {formatDuration(song.attributes.durationInMillis)}
                 </div>
               </div>
@@ -206,7 +206,7 @@ export function CatalogSearch() {
               <div
                 key={album.id}
                 onClick={() => playAlbum(album)}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer group transition-colors"
+                className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
               >
                 {album.attributes.artwork ? (
                   <img
@@ -215,21 +215,21 @@ export function CatalogSearch() {
                     className="w-16 h-16 rounded shadow-lg"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded bg-zinc-700 flex items-center justify-center text-2xl">
+                  <div className="w-16 h-16 rounded bg-secondary flex items-center justify-center text-2xl">
                     💿
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{album.attributes.name}</p>
-                  <p className="text-sm text-zinc-400 truncate">
+                  <p className="font-medium text-foreground truncate">{album.attributes.name}</p>
+                  <p className="text-sm text-muted-foreground truncate">
                     {album.attributes.artistName}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted-foreground">
                     {album.attributes.trackCount} tracks
                     {album.attributes.releaseDate && ` • ${album.attributes.releaseDate.slice(0, 4)}`}
                   </p>
                 </div>
-                <span className="text-zinc-500 group-hover:text-white transition-colors">▶</span>
+                <span className="text-muted-foreground group-hover:text-foreground transition-colors">▶</span>
               </div>
             ))}
 
@@ -237,7 +237,7 @@ export function CatalogSearch() {
             (state.results as MusicKit.Artist[]).map((artist) => (
               <div
                 key={artist.id}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-800/50 transition-colors"
+                className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 transition-colors"
               >
                 {artist.attributes.artwork ? (
                   <img
@@ -246,14 +246,14 @@ export function CatalogSearch() {
                     className="w-16 h-16 rounded-full shadow-lg"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-zinc-700 flex items-center justify-center text-2xl">
+                  <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-2xl">
                     🎤
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{artist.attributes.name}</p>
+                  <p className="font-medium text-foreground truncate">{artist.attributes.name}</p>
                   {artist.attributes.genreNames && artist.attributes.genreNames.length > 0 && (
-                    <p className="text-sm text-zinc-400 truncate">
+                    <p className="text-sm text-muted-foreground truncate">
                       {artist.attributes.genreNames.join(", ")}
                     </p>
                   )}
@@ -266,7 +266,7 @@ export function CatalogSearch() {
               <div
                 key={playlist.id}
                 onClick={() => playPlaylist(playlist)}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer group transition-colors"
+                className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
               >
                 {playlist.attributes.artwork ? (
                   <img
@@ -275,19 +275,19 @@ export function CatalogSearch() {
                     className="w-16 h-16 rounded shadow-lg"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded bg-zinc-700 flex items-center justify-center text-2xl">
+                  <div className="w-16 h-16 rounded bg-secondary flex items-center justify-center text-2xl">
                     📋
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{playlist.attributes.name}</p>
+                  <p className="font-medium text-foreground truncate">{playlist.attributes.name}</p>
                   {playlist.attributes.curatorName && (
-                    <p className="text-sm text-zinc-400 truncate">
+                    <p className="text-sm text-muted-foreground truncate">
                       by {playlist.attributes.curatorName}
                     </p>
                   )}
                 </div>
-                <span className="text-zinc-500 group-hover:text-white transition-colors">▶</span>
+                <span className="text-muted-foreground group-hover:text-foreground transition-colors">▶</span>
               </div>
             ))}
         </div>
@@ -295,7 +295,7 @@ export function CatalogSearch() {
 
       {/* Empty State */}
       {!state.loading && state.results.length === 0 && state.query && (
-        <div className="text-center py-12 text-zinc-500">
+        <div className="text-center py-12 text-muted-foreground">
           <div className="text-4xl mb-2">🔍</div>
           <p>No results found for "{state.query}"</p>
         </div>
@@ -303,7 +303,7 @@ export function CatalogSearch() {
 
       {/* Initial State */}
       {!state.query && state.results.length === 0 && (
-        <div className="text-center py-12 text-zinc-500">
+        <div className="text-center py-12 text-muted-foreground">
           <div className="text-4xl mb-2">🎵</div>
           <p>Search for songs, albums, artists, or playlists</p>
         </div>

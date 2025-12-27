@@ -47,10 +47,10 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+    <div className="bg-card border border-border rounded-2xl p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-white mb-2">Developer Credentials</h2>
-        <p className="text-sm text-zinc-400">
+        <h2 className="text-xl font-bold text-foreground mb-2">Developer Credentials</h2>
+        <p className="text-sm text-muted-foreground">
           Enter your Apple Developer credentials to access the Apple Music API.
           Credentials are stored in-memory only.
         </p>
@@ -58,55 +58,47 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="teamId" className="text-zinc-300">
-            Team ID
-          </Label>
+          <Label htmlFor="teamId">Team ID</Label>
           <Input
             id="teamId"
             name="teamId"
             placeholder="XXXXXXXXXX"
             required
-            className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-500"
           />
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Found in Apple Developer account settings
           </p>
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="keyId" className="text-zinc-300">
-            Key ID
-          </Label>
+          <Label htmlFor="keyId">Key ID</Label>
           <Input
             id="keyId"
             name="keyId"
             placeholder="XXXXXXXXXX"
             required
-            className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-500"
           />
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             10-character key identifier from MusicKit key
           </p>
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="privateKey" className="text-zinc-300">
-            Private Key (.p8 contents)
-          </Label>
+          <Label htmlFor="privateKey">Private Key (.p8 contents)</Label>
           <Textarea
             id="privateKey"
             name="privateKey"
             placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
-            className="font-mono text-xs min-h-[140px] bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-500"
+            className="font-mono text-xs min-h-[140px]"
             required
           />
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             Paste the entire contents of your .p8 file
           </p>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
             {error}
           </div>
         )}
@@ -127,14 +119,14 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
         </Button>
       </form>
 
-      <div className="mt-6 pt-4 border-t border-zinc-800">
-        <p className="text-xs text-zinc-500 text-center">
+      <div className="mt-6 pt-4 border-t border-border">
+        <p className="text-xs text-muted-foreground text-center">
           Need a MusicKit key?{" "}
           <a
             href="https://developer.apple.com/account/resources/authkeys/list"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-pink-400 hover:text-pink-300"
+            className="text-primary hover:text-primary/80"
           >
             Create one in Apple Developer
           </a>

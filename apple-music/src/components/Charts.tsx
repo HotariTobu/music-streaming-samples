@@ -102,14 +102,14 @@ export function Charts() {
   if (state.loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
 
   if (state.error) {
     return (
-      <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
         {state.error}
         <button
           onClick={fetchCharts}
@@ -132,8 +132,8 @@ export function Charts() {
             className={`
               px-4 py-2 rounded-full text-sm font-medium transition-all
               ${state.type === type
-                ? "bg-white text-black"
-                : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                ? "bg-foreground text-background"
+                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
               }
             `}
           >
@@ -150,11 +150,11 @@ export function Charts() {
             <div
               key={song.id}
               onClick={() => playSong(song)}
-              className="flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer group transition-colors"
+              className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
             >
               <span className={`
                 w-8 text-center font-bold text-lg
-                ${idx < 3 ? "text-pink-500" : "text-zinc-500"}
+                ${idx < 3 ? "text-primary" : "text-muted-foreground"}
               `}>
                 {idx + 1}
               </span>
@@ -165,20 +165,20 @@ export function Charts() {
                   className="w-12 h-12 rounded shadow-lg"
                 />
               ) : (
-                <div className="w-12 h-12 rounded bg-zinc-700 flex items-center justify-center">
+                <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
                   ♫
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-white truncate">{song.attributes.name}</p>
-                <p className="text-sm text-zinc-400 truncate">
+                <p className="font-medium text-foreground truncate">{song.attributes.name}</p>
+                <p className="text-sm text-muted-foreground truncate">
                   {song.attributes.artistName}
                 </p>
               </div>
-              <div className="text-sm text-zinc-500 w-12 text-right">
+              <div className="text-sm text-muted-foreground w-12 text-right">
                 {formatDuration(song.attributes.durationInMillis)}
               </div>
-              <span className="text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
                 ▶
               </span>
             </div>
@@ -198,7 +198,7 @@ export function Charts() {
               <div className="relative aspect-square mb-2">
                 <span className={`
                   absolute top-2 left-2 z-10 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                  ${idx < 3 ? "bg-pink-500 text-white" : "bg-zinc-800/80 text-zinc-300"}
+                  ${idx < 3 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}
                 `}>
                   {idx + 1}
                 </span>
@@ -209,7 +209,7 @@ export function Charts() {
                     className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-lg bg-zinc-700 flex items-center justify-center text-4xl">
+                  <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center text-4xl">
                     💿
                   </div>
                 )}
@@ -217,8 +217,8 @@ export function Charts() {
                   <span className="text-white text-3xl">▶</span>
                 </div>
               </div>
-              <p className="font-medium text-white text-sm truncate">{album.attributes.name}</p>
-              <p className="text-xs text-zinc-400 truncate">{album.attributes.artistName}</p>
+              <p className="font-medium text-foreground text-sm truncate">{album.attributes.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{album.attributes.artistName}</p>
             </div>
           ))}
         </div>
@@ -236,7 +236,7 @@ export function Charts() {
               <div className="relative aspect-square mb-2">
                 <span className={`
                   absolute top-2 left-2 z-10 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
-                  ${idx < 3 ? "bg-pink-500 text-white" : "bg-zinc-800/80 text-zinc-300"}
+                  ${idx < 3 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}
                 `}>
                   {idx + 1}
                 </span>
@@ -247,7 +247,7 @@ export function Charts() {
                     className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-lg bg-zinc-700 flex items-center justify-center text-4xl">
+                  <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center text-4xl">
                     📋
                   </div>
                 )}
@@ -255,9 +255,9 @@ export function Charts() {
                   <span className="text-white text-3xl">▶</span>
                 </div>
               </div>
-              <p className="font-medium text-white text-sm truncate">{playlist.attributes.name}</p>
+              <p className="font-medium text-foreground text-sm truncate">{playlist.attributes.name}</p>
               {playlist.attributes.curatorName && (
-                <p className="text-xs text-zinc-400 truncate">{playlist.attributes.curatorName}</p>
+                <p className="text-xs text-muted-foreground truncate">{playlist.attributes.curatorName}</p>
               )}
             </div>
           ))}
@@ -266,7 +266,7 @@ export function Charts() {
 
       {/* Empty State */}
       {state.songs.length === 0 && state.albums.length === 0 && state.playlists.length === 0 && (
-        <div className="text-center py-12 text-zinc-500">
+        <div className="text-center py-12 text-muted-foreground">
           <div className="text-4xl mb-2">📊</div>
           <p>No chart data available</p>
         </div>

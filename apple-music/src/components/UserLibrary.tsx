@@ -151,16 +151,16 @@ export function UserLibrary() {
       <div className="flex flex-col items-center justify-center py-16 space-y-6">
         <div className="text-6xl">🔐</div>
         <div className="text-center">
-          <h3 className="text-xl font-semibold text-white mb-2">
+          <h3 className="text-xl font-semibold text-foreground mb-2">
             Authorization Required
           </h3>
-          <p className="text-zinc-400 mb-6 max-w-md">
+          <p className="text-muted-foreground mb-6 max-w-md">
             To access your Apple Music library, playlists, and recently played,
             you need to authorize this app with your Apple Music account.
           </p>
           <Button
             onClick={authorize}
-            className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600"
+            className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
           >
             Authorize with Apple Music
           </Button>
@@ -180,8 +180,8 @@ export function UserLibrary() {
             className={`
               px-4 py-2 rounded-full text-sm font-medium transition-all
               ${state.tab === tab
-                ? "bg-white text-black"
-                : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                ? "bg-foreground text-background"
+                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
               }
             `}
           >
@@ -194,13 +194,13 @@ export function UserLibrary() {
       {/* Loading */}
       {state.loading && (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full" />
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
       )}
 
       {/* Error */}
       {state.error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
           {state.error}
           <button
             onClick={() => fetchLibrary(state.tab)}
@@ -215,7 +215,7 @@ export function UserLibrary() {
       {!state.loading && state.tab === "songs" && (
         <div className="space-y-1">
           {state.songs.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500">
+            <div className="text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">🎵</div>
               <p>No songs in your library</p>
             </div>
@@ -224,12 +224,12 @@ export function UserLibrary() {
               <div
                 key={song.id}
                 onClick={() => playSong(song)}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-zinc-800/50 cursor-pointer group transition-colors"
+                className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
               >
-                <span className="w-6 text-center text-zinc-500 text-sm group-hover:hidden">
+                <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
                   {idx + 1}
                 </span>
-                <span className="w-6 text-center hidden group-hover:block text-white">
+                <span className="w-6 text-center hidden group-hover:block text-foreground">
                   ▶
                 </span>
                 {song.attributes.artwork ? (
@@ -239,17 +239,17 @@ export function UserLibrary() {
                     className="w-12 h-12 rounded shadow-lg"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded bg-zinc-700 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
                     ♫
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">{song.attributes.name}</p>
-                  <p className="text-sm text-zinc-400 truncate">
+                  <p className="font-medium text-foreground truncate">{song.attributes.name}</p>
+                  <p className="text-sm text-muted-foreground truncate">
                     {song.attributes.artistName}
                   </p>
                 </div>
-                <div className="text-sm text-zinc-500 w-12 text-right">
+                <div className="text-sm text-muted-foreground w-12 text-right">
                   {formatDuration(song.attributes.durationInMillis)}
                 </div>
               </div>
@@ -262,7 +262,7 @@ export function UserLibrary() {
       {!state.loading && state.tab === "albums" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {state.albums.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-zinc-500">
+            <div className="col-span-full text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">💿</div>
               <p>No albums in your library</p>
             </div>
@@ -281,7 +281,7 @@ export function UserLibrary() {
                       className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                     />
                   ) : (
-                    <div className="w-full h-full rounded-lg bg-zinc-700 flex items-center justify-center text-4xl">
+                    <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center text-4xl">
                       💿
                     </div>
                   )}
@@ -289,8 +289,8 @@ export function UserLibrary() {
                     <span className="text-white text-3xl">▶</span>
                   </div>
                 </div>
-                <p className="font-medium text-white text-sm truncate">{album.attributes.name}</p>
-                <p className="text-xs text-zinc-400 truncate">{album.attributes.artistName}</p>
+                <p className="font-medium text-foreground text-sm truncate">{album.attributes.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{album.attributes.artistName}</p>
               </div>
             ))
           )}
@@ -301,7 +301,7 @@ export function UserLibrary() {
       {!state.loading && state.tab === "playlists" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {state.playlists.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-zinc-500">
+            <div className="col-span-full text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">📋</div>
               <p>No playlists in your library</p>
             </div>
@@ -328,12 +328,12 @@ export function UserLibrary() {
                     <span className="text-white text-3xl">▶</span>
                   </div>
                   {playlist.attributes.canEdit && (
-                    <span className="absolute top-2 right-2 text-xs bg-zinc-800/80 px-2 py-0.5 rounded">
+                    <span className="absolute top-2 right-2 text-xs bg-background/80 px-2 py-0.5 rounded">
                       ✏️
                     </span>
                   )}
                 </div>
-                <p className="font-medium text-white text-sm truncate">{playlist.attributes.name}</p>
+                <p className="font-medium text-foreground text-sm truncate">{playlist.attributes.name}</p>
               </div>
             ))
           )}
@@ -344,17 +344,17 @@ export function UserLibrary() {
       {!state.loading && state.tab === "artists" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {state.artists.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-zinc-500">
+            <div className="col-span-full text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">🎤</div>
               <p>No artists in your library</p>
             </div>
           ) : (
             state.artists.map((artist) => (
               <div key={artist.id} className="text-center">
-                <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center text-3xl mb-2">
+                <div className="w-24 h-24 mx-auto rounded-full bg-secondary flex items-center justify-center text-3xl mb-2">
                   🎤
                 </div>
-                <p className="font-medium text-white text-sm truncate">{artist.attributes.name}</p>
+                <p className="font-medium text-foreground text-sm truncate">{artist.attributes.name}</p>
               </div>
             ))
           )}
@@ -365,7 +365,7 @@ export function UserLibrary() {
       {!state.loading && state.tab === "recent" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {state.recentlyPlayed.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-zinc-500">
+            <div className="col-span-full text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">🕐</div>
               <p>No recently played items</p>
             </div>
@@ -380,18 +380,18 @@ export function UserLibrary() {
                       className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                     />
                   ) : (
-                    <div className="w-full h-full rounded-lg bg-zinc-700 flex items-center justify-center text-4xl">
+                    <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center text-4xl">
                       🎵
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                     <span className="text-white text-3xl">▶</span>
                   </div>
-                  <span className="absolute bottom-2 left-2 text-xs bg-zinc-800/80 px-2 py-0.5 rounded capitalize">
+                  <span className="absolute bottom-2 left-2 text-xs bg-background/80 px-2 py-0.5 rounded capitalize">
                     {item.type.replace("s", "")}
                   </span>
                 </div>
-                <p className="font-medium text-white text-sm truncate">{item.attributes.name}</p>
+                <p className="font-medium text-foreground text-sm truncate">{item.attributes.name}</p>
               </div>
             ))
           )}
