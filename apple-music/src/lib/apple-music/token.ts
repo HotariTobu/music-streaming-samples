@@ -123,22 +123,24 @@ export async function generateToken(
   return { token, expiresAt: new Date(exp * 1000) };
 }
 
+const TOKEN_LIFETIME_SEC = 60 * 60; // 1 hour
+
 /**
- * Get or generate a developer token (with caching)
+ * Get or generate a short-lived developer token for browser use
  */
-export async function getDeveloperToken(): Promise<TokenResult> {
+export async function getShortLivedToken(): Promise<TokenResult> {
   if (!storedCredentials) {
     throw new Error("Credentials not configured");
   }
 
-  // Return cached token if still valid (with 1 hour buffer)
+  // Return cached token if still valid (with 10 min buffer)
   if (cachedToken) {
-    const bufferMs = 60 * 60 * 1000;
+    const bufferMs = 10 * 60 * 1000;
     if (cachedToken.expiresAt.getTime() - Date.now() > bufferMs) {
       return cachedToken;
     }
   }
 
-  cachedToken = await generateToken(storedCredentials, 86400); // 24 hours for API proxy
+  cachedToken = await generateToken(storedCredentials, TOKEN_LIFETIME_SEC);
   return cachedToken;
 }

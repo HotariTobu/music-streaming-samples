@@ -5,9 +5,9 @@ import {
   setCredentials,
   hasCredentials,
   clearCredentials,
+  getShortLivedToken,
   type AppleCredentials,
 } from "./lib/apple-music/token";
-import { getClient } from "./lib/apple-music/client";
 
 function getLocalIP() {
   const interfaces = networkInterfaces();
@@ -22,6 +22,18 @@ function getLocalIP() {
 }
 
 const port = Bun.argv[2] ? parseInt(Bun.argv[2]) : 3000;
+const localIP = getLocalIP();
+
+const ALLOWED_ORIGINS = new Set([
+  `http://localhost:${port}`,
+  `http://127.0.0.1:${port}`,
+  ...(localIP ? [`http://${localIP}:${port}`] : []),
+]);
+
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.has(origin);
+}
 
 const server = serve({
   port,
@@ -77,74 +89,33 @@ const server = serve({
       },
     },
 
-    // Apple Music API Proxy
-    "/api/music/search": async req => {
-      const url = new URL(req.url);
-      const term = url.searchParams.get("term") || "";
-      const types = url.searchParams.get("types")?.split(",") || ["songs", "artists", "albums"];
-      const limit = parseInt(url.searchParams.get("limit") || "10");
-      const storefront = url.searchParams.get("storefront") || "jp";
+    // Token endpoint (short-lived JWT for browser-side MusicKit)
+    "/api/token": {
+      async GET(req) {
+        // Origin check
+        const origin = req.headers.get("origin");
+        if (!isAllowedOrigin(origin)) {
+          return Response.json({ error: "Forbidden" }, { status: 403 });
+        }
 
-      if (!term) {
-        return Response.json({ error: "term is required" }, { status: 400 });
-      }
+        if (!hasCredentials()) {
+          return Response.json(
+            { error: "Credentials not configured" },
+            { status: 401 }
+          );
+        }
 
-      try {
-        const client = getClient(storefront);
-        const result = await client.search(term, types, limit);
-        return Response.json(result);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Search failed";
-        return Response.json({ error: message }, { status: 500 });
-      }
-    },
-
-    "/api/music/songs/:id": async req => {
-      try {
-        const client = getClient();
-        const result = await client.getSong(req.params.id);
-        return Response.json(result);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Failed";
-        return Response.json({ error: message }, { status: 500 });
-      }
-    },
-
-    "/api/music/albums/:id": async req => {
-      try {
-        const client = getClient();
-        const result = await client.getAlbum(req.params.id);
-        return Response.json(result);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Failed";
-        return Response.json({ error: message }, { status: 500 });
-      }
-    },
-
-    "/api/music/artists/:id": async req => {
-      try {
-        const client = getClient();
-        const result = await client.getArtist(req.params.id);
-        return Response.json(result);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Failed";
-        return Response.json({ error: message }, { status: 500 });
-      }
-    },
-
-    "/api/music/charts": async req => {
-      const url = new URL(req.url);
-      const types = url.searchParams.get("types")?.split(",") || ["songs", "albums"];
-      const limit = parseInt(url.searchParams.get("limit") || "20");
-
-      try {
-        const client = getClient();
-        const result = await client.getCharts(types, limit);
-        return Response.json(result);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Failed";
-        return Response.json({ error: message }, { status: 500 });
-      }
+        try {
+          const { token, expiresAt } = await getShortLivedToken();
+          return Response.json({
+            token,
+            expiresAt: expiresAt.toISOString(),
+          });
+        } catch (e) {
+          const message = e instanceof Error ? e.message : "Token generation failed";
+          return Response.json({ error: message }, { status: 500 });
+        }
+      },
     },
   },
 
@@ -157,6 +128,5 @@ const server = serve({
   },
 });
 
-const localIP = getLocalIP();
 console.log(`🚀 Local: http://localhost:${port}`);
 if (localIP) console.log(`📡 Network: http://${localIP}:${port}`);
