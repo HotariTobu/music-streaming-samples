@@ -23,6 +23,11 @@ Bun monorepo for exploring and comparing music streaming service APIs (Spotify, 
 
 Each subproject has its own CLAUDE.md with detailed guidance.
 
+## Project Management
+
+- `ROADMAP.json` - High-level phase progress (root)
+- `<subproject>/TASKS.json` - Detailed task management per subproject
+
 ## Subprojects
 
 - `spotify/` - Spotify API sample (port 22222)
