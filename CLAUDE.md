@@ -34,6 +34,11 @@ Each subproject has its own CLAUDE.md with detailed guidance.
 - `apple-music/` - Apple Music API sample (port 11111)
 - `youtube-music/` - YouTube Music API sample (port 33333)
 
+## LLM Documentation
+
+- `llms-txt/` - API documentation for LLM consumption (each folder has index.md)
+  - `apple-music-api/` - MusicKit JS v3 documentation
+
 ## Rules
 
 - At session start, check recent commits to understand current progress
