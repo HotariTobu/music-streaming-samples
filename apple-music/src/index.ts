@@ -1,7 +1,23 @@
 import { serve } from "bun";
+import { networkInterfaces } from "os";
 import index from "./index.html";
 
+function getLocalIP() {
+  const interfaces = networkInterfaces();
+  for (const name in interfaces) {
+    for (const iface of interfaces[name]!) {
+      if (iface.family === "IPv4" && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return null;
+}
+
+const port = Bun.argv[2] ? parseInt(Bun.argv[2]) : 3000;
+
 const server = serve({
+  port,
   routes: {
     // Serve index.html for all unmatched routes.
     "/*": index,
@@ -38,4 +54,6 @@ const server = serve({
   },
 });
 
-console.log(`🚀 Server running at ${server.url}`);
+const localIP = getLocalIP();
+console.log(`🚀 Local: http://localhost:${port}`);
+if (localIP) console.log(`📡 Network: http://${localIP}:${port}`);

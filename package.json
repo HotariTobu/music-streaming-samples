@@ -1,0 +1,12 @@
+{
+  "name": "music-streaming-samples",
+  "private": true,
+  "workspaces": [
+    "apple-music",
+    "spotify",
+    "youtube-music"
+  ],
+  "scripts": {
+    "dev": "bun run --filter '*' dev"
+  }
+}

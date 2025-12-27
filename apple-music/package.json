@@ -1,10 +1,10 @@
 {
-  "name": "bun-react-template",
+  "name": "apple-music",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --hot src/index.ts",
+    "dev": "bun --hot src/index.ts 11111",
     "start": "NODE_ENV=production bun src/index.ts",
     "build": "bun run build.ts"
   },
