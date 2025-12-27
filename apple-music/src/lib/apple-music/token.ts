@@ -7,6 +7,8 @@
  * @see https://developer.apple.com/documentation/applemusicapi/generating-developer-tokens
  */
 
+import { SignJWT, importPKCS8 } from "jose";
+
 export interface AppleCredentials {
   teamId: string;
   keyId: string;
@@ -53,45 +55,6 @@ export function clearCredentials(): void {
 }
 
 /**
- * Base64URL encode (RFC 4648)
- */
-function base64UrlEncode(data: ArrayBuffer | Uint8Array | string): string {
-  const bytes =
-    typeof data === "string" ? new TextEncoder().encode(data) : new Uint8Array(data);
-
-  let binary = "";
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-/**
- * Import PEM private key for ES256 signing
- */
-async function importPrivateKey(pem: string): Promise<CryptoKey> {
-  const pemContents = pem
-    .replace(/-----BEGIN PRIVATE KEY-----/, "")
-    .replace(/-----END PRIVATE KEY-----/, "")
-    .replace(/\s/g, "");
-
-  const binaryString = atob(pemContents);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-
-  return crypto.subtle.importKey(
-    "pkcs8",
-    bytes,
-    { name: "ECDSA", namedCurve: "P-256" },
-    false,
-    ["sign"]
-  );
-}
-
-/**
  * Generate Apple Music Developer Token (JWT with ES256)
  */
 export async function generateToken(
@@ -103,22 +66,14 @@ export async function generateToken(
   const now = Math.floor(Date.now() / 1000);
   const exp = now + expiresIn;
 
-  const header = { alg: "ES256", kid: keyId };
-  const payload = { iss: teamId, iat: now, exp: exp };
+  const key = await importPKCS8(privateKey, "ES256");
 
-  const encodedHeader = base64UrlEncode(JSON.stringify(header));
-  const encodedPayload = base64UrlEncode(JSON.stringify(payload));
-  const signingInput = `${encodedHeader}.${encodedPayload}`;
-
-  const key = await importPrivateKey(privateKey);
-  const signature = await crypto.subtle.sign(
-    { name: "ECDSA", hash: "SHA-256" },
-    key,
-    new TextEncoder().encode(signingInput)
-  );
-
-  const encodedSignature = base64UrlEncode(new Uint8Array(signature));
-  const token = `${signingInput}.${encodedSignature}`;
+  const token = await new SignJWT({})
+    .setProtectedHeader({ alg: "ES256", kid: keyId })
+    .setIssuer(teamId)
+    .setIssuedAt(now)
+    .setExpirationTime(exp)
+    .sign(key);
 
   return { token, expiresAt: new Date(exp * 1000) };
 }

@@ -110,23 +110,23 @@ export function MusicKitProvider({ children }: { children: ReactNode }) {
     if (!isConfigured) return;
 
     try {
-      // Wait for MusicKit to load
+      // Wait for MusicKit to load via musickitloaded event
       if (!window.MusicKit) {
         await new Promise<void>((resolve, reject) => {
-          const maxWait = 10000;
-          const interval = 100;
-          let waited = 0;
+          const timeout = setTimeout(() => {
+            reject(new Error("MusicKit failed to load"));
+          }, 10000);
 
-          const check = setInterval(() => {
-            if (window.MusicKit) {
-              clearInterval(check);
-              resolve();
-            } else if (waited >= maxWait) {
-              clearInterval(check);
-              reject(new Error("MusicKit failed to load"));
-            }
-            waited += interval;
-          }, interval);
+          document.addEventListener("musickitloaded", () => {
+            clearTimeout(timeout);
+            resolve();
+          }, { once: true });
+
+          // Also check if already loaded
+          if (window.MusicKit) {
+            clearTimeout(timeout);
+            resolve();
+          }
         });
       }
 
