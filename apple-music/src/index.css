@@ -2,11 +2,11 @@
 
 @layer base {
   :root {
-    @apply font-sans;
+    @apply font-sans antialiased;
   }
 
   body {
-    @apply min-w-[320px] min-h-screen m-0 bg-black text-white antialiased;
+    @apply min-w-[320px] min-h-screen m-0;
   }
 
   #root {
