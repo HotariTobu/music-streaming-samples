@@ -1,38 +1,87 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APITester } from "./APITester";
+import { Button } from "@/components/ui/button";
+import { CredentialsForm } from "./components/CredentialsForm";
+import { MusicKitProvider, useMusicKit } from "./contexts/MusicKitContext";
 import "./index.css";
 
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+function MusicKitStatus() {
+  const { isConfigured, isReady, isAuthorized, error, authorize, checkCredentials } = useMusicKit();
+
+  if (!isConfigured) {
+    return (
+      <div className="flex flex-col items-center gap-6">
+        <CredentialsForm onConfigured={checkCredentials} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-destructive">Error</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">{error}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!isReady) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Initializing MusicKit...</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Loading MusicKit JS and configuring with your credentials.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>Apple Music</CardTitle>
+        <CardDescription>
+          MusicKit initialized successfully
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Status:</span>
+          <span className={`text-sm font-medium ${isAuthorized ? "text-green-600" : "text-yellow-600"}`}>
+            {isAuthorized ? "Authorized" : "Not Authorized"}
+          </span>
+        </div>
+        {!isAuthorized && (
+          <Button onClick={authorize}>
+            Authorize with Apple Music
+          </Button>
+        )}
+        {isAuthorized && (
+          <p className="text-sm text-muted-foreground">
+            You can now access Apple Music features.
+            Search functionality coming next!
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export function App() {
   return (
-    <div className="container mx-auto p-8 text-center relative z-10">
-      <div className="flex justify-center items-center gap-8 mb-8">
-        <img
-          src={logo}
-          alt="Bun Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#646cffaa] scale-120"
-        />
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#61dafbaa] [animation:spin_20s_linear_infinite]"
-        />
+    <MusicKitProvider>
+      <div className="container mx-auto p-8 flex flex-col items-center gap-8">
+        <h1 className="text-3xl font-bold">Apple Music Sample</h1>
+        <MusicKitStatus />
       </div>
-      <Card>
-        <CardHeader className="gap-4">
-          <CardTitle className="text-3xl font-bold">Bun + React</CardTitle>
-          <CardDescription>
-            Edit <code className="rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono">src/App.tsx</code> and save to
-            test HMR
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <APITester />
-        </CardContent>
-      </Card>
-    </div>
+    </MusicKitProvider>
   );
 }
 

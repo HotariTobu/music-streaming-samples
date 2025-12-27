@@ -4,11 +4,11 @@
     {
       "id": "phase-1",
       "name": "Apple Music",
-      "status": "not_started",
+      "status": "in_progress",
       "steps": [
-        { "id": "1-1", "name": "Research Apple Music API", "status": "not_started" },
-        { "id": "1-2", "name": "Select authentication approach", "status": "not_started" },
-        { "id": "1-3", "name": "Implement authentication", "status": "not_started" },
+        { "id": "1-1", "name": "Research Apple Music API", "status": "done" },
+        { "id": "1-2", "name": "Select authentication approach", "status": "done" },
+        { "id": "1-3", "name": "Implement authentication", "status": "in_progress" },
         { "id": "1-4", "name": "Implement search", "status": "not_started" },
         { "id": "1-5", "name": "Implement playback control", "status": "not_started" },
         { "id": "1-6", "name": "Implement playlist management", "status": "not_started" },
