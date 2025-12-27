@@ -36,6 +36,7 @@ Each subproject has its own CLAUDE.md with detailed guidance.
 
 ## Rules
 
+- At session start, check recent commits to understand current progress
 - All writing must be in English
 - When using WebSearch, always use the current date
 - For ambiguous instructions, confirm understanding with the user before proceeding
