@@ -38,6 +38,13 @@ export function hasCredentials(): boolean {
 }
 
 /**
+ * Get stored credentials
+ */
+export function getCredentials(): AppleCredentials | null {
+  return storedCredentials;
+}
+
+/**
  * Clear stored credentials
  */
 export function clearCredentials(): void {
@@ -87,9 +94,9 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
 /**
  * Generate Apple Music Developer Token (JWT with ES256)
  */
-async function generateToken(
+export async function generateToken(
   credentials: AppleCredentials,
-  expiresIn: number = 15777000
+  expiresIn: number
 ): Promise<TokenResult> {
   const { teamId, keyId, privateKey } = credentials;
 
@@ -132,6 +139,6 @@ export async function getDeveloperToken(): Promise<TokenResult> {
     }
   }
 
-  cachedToken = await generateToken(storedCredentials);
+  cachedToken = await generateToken(storedCredentials, 86400); // 24 hours for API proxy
   return cachedToken;
 }
