@@ -30,9 +30,9 @@ export function CatalogSearch() {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const storefront = musicKit.storefrontId || "us";
+      // Use {{storefrontId}} template token - automatically replaced with user's storefront
       const response = await musicKit.api.music<MusicKit.SearchResults>(
-        `/v1/catalog/${storefront}/search`,
+        "/v1/catalog/{{storefrontId}}/search",
         {
           term: state.query,
           types: state.type,

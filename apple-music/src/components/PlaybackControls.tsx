@@ -75,7 +75,7 @@ export function PlaybackControls() {
 
   const togglePlayPause = useCallback(async () => {
     if (!musicKit) return;
-    if (playbackState === 2) { // playing
+    if (playbackState === MusicKit.PlaybackStates.playing) {
       musicKit.pause();
     } else {
       await musicKit.play();
@@ -107,7 +107,8 @@ export function PlaybackControls() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!musicKit) return;
       const newVolume = parseFloat(e.target.value);
-      musicKit.setVolume(newVolume);
+      // v3 uses direct property setter instead of setVolume method
+      musicKit.volume = newVolume;
     },
     [musicKit]
   );
@@ -120,7 +121,7 @@ export function PlaybackControls() {
     [musicKit]
   );
 
-  const isPlaying = playbackState === 2;
+  const isPlaying = playbackState === MusicKit.PlaybackStates.playing;
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (

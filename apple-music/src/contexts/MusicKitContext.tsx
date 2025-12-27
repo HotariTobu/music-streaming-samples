@@ -73,10 +73,11 @@ export function MusicKitProvider({ children }: { children: ReactNode }) {
 
           // Re-configure MusicKit with new token
           if (window.MusicKit) {
-            const instance = await window.MusicKit.configure({
+            await window.MusicKit.configure({
               developerToken: newTokenInfo.token,
               app: { name: APP_NAME, build: APP_BUILD },
             });
+            const instance = window.MusicKit.getInstance();
             setMusicKit(instance);
             setIsAuthorized(instance.isAuthorized);
             console.log("[MusicKit] Token refreshed successfully");
@@ -110,6 +111,25 @@ export function MusicKitProvider({ children }: { children: ReactNode }) {
     if (!isConfigured) return;
 
     try {
+      // Fetch developer token first
+      const tokenInfo = await fetchToken();
+      tokenInfoRef.current = tokenInfo;
+
+      // Set meta tags for MusicKit configuration (before it loads)
+      const setMetaTag = (name: string, content: string) => {
+        let meta = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.name = name;
+          document.head.appendChild(meta);
+        }
+        meta.content = content;
+      };
+
+      setMetaTag("apple-music-developer-token", tokenInfo.token);
+      setMetaTag("apple-music-app-name", APP_NAME);
+      setMetaTag("apple-music-app-build", APP_BUILD);
+
       // Wait for MusicKit to load via musickitloaded event
       if (!window.MusicKit) {
         await new Promise<void>((resolve, reject) => {
@@ -130,16 +150,13 @@ export function MusicKitProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      // Fetch developer token
-      const tokenInfo = await fetchToken();
-      tokenInfoRef.current = tokenInfo;
-
-      // Configure MusicKit
-      const instance = await window.MusicKit.configure({
+      // Configure MusicKit (meta tags alone won't work if MusicKit already loaded)
+      await window.MusicKit.configure({
         developerToken: tokenInfo.token,
         app: { name: APP_NAME, build: APP_BUILD },
       });
 
+      const instance = window.MusicKit.getInstance();
       setMusicKit(instance);
       setIsReady(true);
       setIsAuthorized(instance.isAuthorized);
@@ -148,8 +165,9 @@ export function MusicKitProvider({ children }: { children: ReactNode }) {
       scheduleTokenRefresh(tokenInfo);
 
       // Listen for authorization changes
-      instance.addEventListener("authorizationStatusDidChange", (event) => {
-        setIsAuthorized(event.authorizationStatus === MusicKit.AuthorizationStatus.AUTHORIZED);
+      instance.addEventListener("authorizationStatusDidChange", () => {
+        // Use the isAuthorized property directly as per v3 docs
+        setIsAuthorized(instance.isAuthorized);
       });
 
       console.log("[MusicKit] Initialized successfully");

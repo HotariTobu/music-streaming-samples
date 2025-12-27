@@ -20,17 +20,18 @@ export function getArtworkUrl(
 }
 
 export function getPlaybackStateLabel(state: MusicKit.PlaybackStates): string {
-  const labels: Record<number, string> = {
-    0: "None",
-    1: "Loading",
-    2: "Playing",
-    3: "Paused",
-    4: "Stopped",
-    5: "Ended",
-    6: "Seeking",
-    8: "Waiting",
-    9: "Stalled",
-    10: "Completed",
+  // Using MusicKit.PlaybackStates enum values
+  const labels: Record<MusicKit.PlaybackStates, string> = {
+    [MusicKit.PlaybackStates.none]: "None",
+    [MusicKit.PlaybackStates.loading]: "Loading",
+    [MusicKit.PlaybackStates.playing]: "Playing",
+    [MusicKit.PlaybackStates.paused]: "Paused",
+    [MusicKit.PlaybackStates.stopped]: "Stopped",
+    [MusicKit.PlaybackStates.ended]: "Ended",
+    [MusicKit.PlaybackStates.seeking]: "Seeking",
+    [MusicKit.PlaybackStates.waiting]: "Waiting",
+    [MusicKit.PlaybackStates.stalled]: "Stalled",
+    [MusicKit.PlaybackStates.completed]: "Completed",
   };
   return labels[state] || "Unknown";
 }

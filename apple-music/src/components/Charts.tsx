@@ -30,9 +30,9 @@ export function Charts() {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const storefront = musicKit.storefrontId || "us";
+      // Use {{storefrontId}} template token - automatically replaced with user's storefront
       const response = await musicKit.api.music<MusicKit.ChartsResults>(
-        `/v1/catalog/${storefront}/charts`,
+        "/v1/catalog/{{storefrontId}}/charts",
         {
           types: "songs,albums,playlists",
           limit: 20,
