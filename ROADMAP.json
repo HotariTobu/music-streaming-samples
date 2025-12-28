@@ -6,13 +6,79 @@
       "name": "Apple Music",
       "status": "done",
       "steps": [
-        { "id": "1-1", "name": "Research Apple Music API", "status": "done" },
-        { "id": "1-2", "name": "Select authentication approach", "status": "done" },
-        { "id": "1-3", "name": "Implement authentication", "status": "done" },
-        { "id": "1-4", "name": "Implement search", "status": "done" },
-        { "id": "1-5", "name": "Implement playback control", "status": "done" },
-        { "id": "1-6", "name": "Implement playlist management", "status": "done" },
-        { "id": "1-7", "name": "Implement library management", "status": "done" }
+        {
+          "id": "1-1",
+          "name": "Research API & Architecture",
+          "status": "done",
+          "details": [
+            "API research (endpoints, auth methods, SDK)",
+            "Architecture decision (browser/server split)",
+            "LLM documentation (optional)"
+          ]
+        },
+        {
+          "id": "1-2",
+          "name": "Project Setup & UI Foundation",
+          "status": "done",
+          "details": [
+            "Project initialization",
+            "UI component library setup",
+            "Theme system implementation",
+            "Routing setup",
+            "Data fetching & form foundation"
+          ]
+        },
+        {
+          "id": "1-3",
+          "name": "Authentication",
+          "status": "done",
+          "details": [
+            "Developer token generation",
+            "Token endpoint",
+            "SDK integration",
+            "Token rotation",
+            "User authorization flow"
+          ]
+        },
+        {
+          "id": "1-4",
+          "name": "Search & Browse",
+          "status": "done",
+          "details": [
+            "Catalog search (songs/albums/artists/playlists)",
+            "Charts display",
+            "Detail pages (album/playlist)"
+          ]
+        },
+        {
+          "id": "1-5",
+          "name": "Playback Control",
+          "status": "done",
+          "details": [
+            "Playback controls (play/pause/skip)",
+            "Seek bar, volume",
+            "Queue management",
+            "Playback state management"
+          ]
+        },
+        {
+          "id": "1-6",
+          "name": "Playlist Management",
+          "status": "done",
+          "details": [
+            "Playlist CRUD",
+            "Track add/remove"
+          ]
+        },
+        {
+          "id": "1-7",
+          "name": "Library Management",
+          "status": "done",
+          "details": [
+            "Library display (songs/albums/playlists/artists)",
+            "Recently played"
+          ]
+        }
       ]
     },
     {
@@ -20,13 +86,79 @@
       "name": "Spotify",
       "status": "not_started",
       "steps": [
-        { "id": "2-1", "name": "Research Spotify API", "status": "not_started" },
-        { "id": "2-2", "name": "Select authentication approach", "status": "not_started" },
-        { "id": "2-3", "name": "Implement authentication", "status": "not_started" },
-        { "id": "2-4", "name": "Implement search", "status": "not_started" },
-        { "id": "2-5", "name": "Implement playback control", "status": "not_started" },
-        { "id": "2-6", "name": "Implement playlist management", "status": "not_started" },
-        { "id": "2-7", "name": "Implement library management", "status": "not_started" }
+        {
+          "id": "2-1",
+          "name": "Research API & Architecture",
+          "status": "not_started",
+          "details": [
+            "API research (endpoints, auth methods, SDK)",
+            "Architecture decision (browser/server split)",
+            "LLM documentation (optional)"
+          ]
+        },
+        {
+          "id": "2-2",
+          "name": "Project Setup & UI Foundation",
+          "status": "not_started",
+          "details": [
+            "Project initialization",
+            "UI component library setup",
+            "Theme system implementation",
+            "Routing setup",
+            "Data fetching & form foundation"
+          ]
+        },
+        {
+          "id": "2-3",
+          "name": "Authentication",
+          "status": "not_started",
+          "details": [
+            "OAuth PKCE flow implementation",
+            "Token endpoint",
+            "SDK integration (Spotify Web Playback SDK)",
+            "Token refresh",
+            "User authorization flow"
+          ]
+        },
+        {
+          "id": "2-4",
+          "name": "Search & Browse",
+          "status": "not_started",
+          "details": [
+            "Catalog search (songs/albums/artists/playlists)",
+            "Charts & recommendations display",
+            "Detail pages (album/playlist)"
+          ]
+        },
+        {
+          "id": "2-5",
+          "name": "Playback Control",
+          "status": "not_started",
+          "details": [
+            "Playback controls (play/pause/skip)",
+            "Seek bar, volume",
+            "Queue management",
+            "Playback state management"
+          ]
+        },
+        {
+          "id": "2-6",
+          "name": "Playlist Management",
+          "status": "not_started",
+          "details": [
+            "Playlist CRUD",
+            "Track add/remove"
+          ]
+        },
+        {
+          "id": "2-7",
+          "name": "Library Management",
+          "status": "not_started",
+          "details": [
+            "Library display (songs/albums/playlists/artists)",
+            "Recently played"
+          ]
+        }
       ]
     },
     {
@@ -34,23 +166,116 @@
       "name": "YouTube Music",
       "status": "not_started",
       "steps": [
-        { "id": "3-1", "name": "Research YouTube Music API", "status": "not_started" },
-        { "id": "3-2", "name": "Select authentication approach", "status": "not_started" },
-        { "id": "3-3", "name": "Implement authentication", "status": "not_started" },
-        { "id": "3-4", "name": "Implement search", "status": "not_started" },
-        { "id": "3-5", "name": "Implement playback control", "status": "not_started" },
-        { "id": "3-6", "name": "Implement playlist management", "status": "not_started" },
-        { "id": "3-7", "name": "Implement library management", "status": "not_started" }
+        {
+          "id": "3-1",
+          "name": "Research API & Architecture",
+          "status": "not_started",
+          "details": [
+            "API research (endpoints, auth methods, SDK)",
+            "Architecture decision (browser/server split)",
+            "LLM documentation (optional)"
+          ]
+        },
+        {
+          "id": "3-2",
+          "name": "Project Setup & UI Foundation",
+          "status": "not_started",
+          "details": [
+            "Project initialization",
+            "UI component library setup",
+            "Theme system implementation",
+            "Routing setup",
+            "Data fetching & form foundation"
+          ]
+        },
+        {
+          "id": "3-3",
+          "name": "Authentication",
+          "status": "not_started",
+          "details": [
+            "OAuth 2.0 flow implementation",
+            "Token endpoint",
+            "YouTube IFrame Player API integration",
+            "Token refresh",
+            "User authorization flow"
+          ]
+        },
+        {
+          "id": "3-4",
+          "name": "Search & Browse",
+          "status": "not_started",
+          "details": [
+            "Catalog search (songs/albums/artists/playlists)",
+            "Charts & recommendations display",
+            "Detail pages (album/playlist)"
+          ]
+        },
+        {
+          "id": "3-5",
+          "name": "Playback Control",
+          "status": "not_started",
+          "details": [
+            "Playback controls (play/pause/skip)",
+            "Seek bar, volume",
+            "Queue management",
+            "Playback state management"
+          ]
+        },
+        {
+          "id": "3-6",
+          "name": "Playlist Management",
+          "status": "not_started",
+          "details": [
+            "Playlist CRUD",
+            "Track add/remove"
+          ]
+        },
+        {
+          "id": "3-7",
+          "name": "Library Management",
+          "status": "not_started",
+          "details": [
+            "Library display (songs/albums/playlists/artists)",
+            "Recently played"
+          ]
+        }
       ]
     },
     {
       "id": "phase-4",
-      "name": "Cross-service features",
+      "name": "Cross-service Features",
       "status": "not_started",
       "steps": [
-        { "id": "4-1", "name": "Extract common interface", "status": "not_started" },
-        { "id": "4-2", "name": "Implement playlist migration", "status": "not_started" },
-        { "id": "4-3", "name": "Implement cross-service search", "status": "not_started" }
+        {
+          "id": "4-1",
+          "name": "Extract Common Interface",
+          "status": "not_started",
+          "details": [
+            "Common type definitions (Song, Album, Artist, Playlist)",
+            "Service abstraction layer",
+            "Unified API call interface"
+          ]
+        },
+        {
+          "id": "4-2",
+          "name": "Playlist Migration",
+          "status": "not_started",
+          "details": [
+            "Cross-service track matching",
+            "Playlist export/import",
+            "Fallback handling for unmatched tracks"
+          ]
+        },
+        {
+          "id": "4-3",
+          "name": "Cross-service Search",
+          "status": "not_started",
+          "details": [
+            "Unified search UI",
+            "Result normalization & merge",
+            "Service-specific filtering"
+          ]
+        }
       ]
     }
   ]
