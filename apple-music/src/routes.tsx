@@ -10,6 +10,7 @@ import { Charts } from "./components/Charts";
 import { UserLibrary } from "./components/UserLibrary";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { PlaylistDetailPage } from "./components/PlaylistDetailPage";
+import { CatalogPlaylistDetailPage } from "./components/CatalogPlaylistDetailPage";
 import { LibraryAlbumDetailPage } from "./components/LibraryAlbumDetailPage";
 import { CatalogAlbumDetailPage } from "./components/CatalogAlbumDetailPage";
 import { ChartsAlbumDetailPage } from "./components/ChartsAlbumDetailPage";
@@ -57,11 +58,17 @@ const libraryRoute = createRoute({
   validateSearch: libraryTabSchema,
 });
 
-// Playlist detail route
+// Playlist detail routes
 const playlistDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/library/playlists/$playlistId",
   component: PlaylistDetailPage,
+});
+
+const catalogPlaylistDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/playlists/$playlistId",
+  component: CatalogPlaylistDetailPage,
 });
 
 // Album detail routes
@@ -96,6 +103,7 @@ const routeTree = rootRoute.addChildren([
   chartsRoute,
   libraryRoute,
   playlistDetailRoute,
+  catalogPlaylistDetailRoute,
   libraryAlbumDetailRoute,
   catalogAlbumDetailRoute,
   chartsAlbumDetailRoute,

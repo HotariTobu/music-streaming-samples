@@ -78,6 +78,7 @@ declare namespace MusicKit {
     station?: string;
     songs?: string[];
     startPlaying?: boolean;
+    startWith?: number;
   }
 
   interface MediaItem {

@@ -1,6 +1,7 @@
 import { useMemo, useCallback } from "react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useMusicKit } from "@/contexts/MusicKitContext";
+import { usePlayAlbum } from "@/hooks/usePlayAlbum";
 import { useLibraryAlbum } from "@/hooks/useLibraryAlbum";
 import { useCatalogAlbum } from "@/hooks/useCatalogAlbum";
 import { useLibraryAlbumTracksInfinite } from "@/hooks/useLibraryAlbumTracksInfinite";
@@ -20,7 +21,8 @@ type AlbumDetailPageProps = {
 };
 
 export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
-  const { musicKit, isAuthorized, authorize } = useMusicKit();
+  const { isAuthorized, authorize, isReady } = useMusicKit();
+  const playAlbum = usePlayAlbum();
 
   const routeApi = source === "library"
     ? libraryRouteApi
@@ -61,28 +63,17 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
     );
   }, [tracksQuery.data]);
 
-  const playAlbum = async () => {
-    if (!musicKit || !album) return;
-    try {
-      await musicKit.setQueue({ album: album.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[AlbumDetailPage] Play album failed:", err);
-    }
+  const handlePlayAlbum = () => {
+    if (!album) return;
+    playAlbum(album.id);
   };
 
-  const playSong = useCallback(
-    async (startIndex: number) => {
-      if (!musicKit || !album) return;
-      try {
-        await musicKit.setQueue({ album: album.id });
-        await musicKit.changeToMediaAtIndex(startIndex);
-        await musicKit.play();
-      } catch (err) {
-        console.error("[AlbumDetailPage] Play song failed:", err);
-      }
+  const handlePlaySong = useCallback(
+    (startIndex: number) => {
+      if (!album) return;
+      playAlbum(album.id, startIndex);
     },
-    [musicKit, album]
+    [album, playAlbum]
   );
 
   const goBack = () => {
@@ -100,7 +91,7 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
     (track: LibrarySong | Song, idx: number) => (
       <div
         key={track.id}
-        onClick={() => playSong(idx)}
+        onClick={() => handlePlaySong(idx)}
         className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
       >
         <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
@@ -122,7 +113,7 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
         </div>
       </div>
     ),
-    [playSong]
+    [handlePlaySong]
   );
 
   // Not authorized (only for library source)
@@ -149,8 +140,8 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
     );
   }
 
-  // Loading
-  if (isLoadingAlbum) {
+  // Loading (including MusicKit initialization for catalog sources)
+  if (isLoadingAlbum || (isCatalog && !isReady)) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -219,7 +210,7 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
           </div>
           <div className="flex gap-2">
             <Button
-              onClick={playAlbum}
+              onClick={handlePlayAlbum}
               disabled={trackCount === 0}
               className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
             >

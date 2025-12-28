@@ -23,9 +23,26 @@ export function PlaybackControls() {
 
   const togglePlayPause = useCallback(async () => {
     if (!musicKit) return;
-    if (playbackState === MusicKit.PlaybackStates.playing) {
+
+    const { PlaybackStates } = MusicKit;
+
+    // If playing, pause
+    if (playbackState === PlaybackStates.playing) {
       musicKit.pause();
-    } else {
+      return;
+    }
+
+    // Only call play() in valid states (paused, stopped, completed, none)
+    // Avoid calling play() during loading, seeking, waiting, or stalled
+    const canPlay = [
+      PlaybackStates.none,
+      PlaybackStates.paused,
+      PlaybackStates.stopped,
+      PlaybackStates.completed,
+      PlaybackStates.ended,
+    ].includes(playbackState);
+
+    if (canPlay) {
       await musicKit.play();
     }
   }, [musicKit, playbackState]);

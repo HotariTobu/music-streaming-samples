@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { useMusicKit } from "@/contexts/MusicKitContext";
+import { usePlayPlaylist } from "@/hooks/usePlayPlaylist";
 import { useChartsInfinite } from "@/hooks/useChartsInfinite";
 import { getArtworkUrl } from "@/lib/utils";
 import type { Playlist } from "@/schemas";
@@ -7,7 +7,7 @@ import { ListMusic, Play } from "lucide-react";
 import { VirtualGrid } from "./VirtualGrid";
 
 export function PlaylistsChart() {
-  const { musicKit } = useMusicKit();
+  const playPlaylist = usePlayPlaylist();
   const query = useChartsInfinite("playlists");
 
   const playlists = useMemo(
@@ -15,21 +15,15 @@ export function PlaylistsChart() {
     [query.data]
   );
 
-  const playPlaylist = async (playlist: Playlist) => {
-    if (!musicKit) return;
-    try {
-      await musicKit.setQueue({ playlist: playlist.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[PlaylistsChart] Play playlist failed:", err);
-    }
+  const handlePlayPlaylist = (playlist: Playlist) => {
+    playPlaylist(playlist.id);
   };
 
   const renderPlaylist = useCallback(
     (playlist: Playlist, idx: number) => (
       <div
         key={playlist.id}
-        onClick={() => playPlaylist(playlist)}
+        onClick={() => handlePlayPlaylist(playlist)}
         className="group cursor-pointer"
       >
         <div className="relative aspect-square mb-2">
@@ -60,7 +54,7 @@ export function PlaylistsChart() {
         )}
       </div>
     ),
-    [musicKit]
+    [handlePlayPlaylist]
   );
 
   if (query.isLoading) {

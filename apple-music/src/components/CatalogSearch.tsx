@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
+import { usePlaySongs } from "@/hooks/usePlaySongs";
 import { useCatalogSearchInfinite } from "@/hooks/useCatalogSearchInfinite";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 import type { Song, Album, Artist, Playlist } from "@/schemas";
@@ -17,7 +18,8 @@ type SearchType = "songs" | "albums" | "artists" | "playlists";
 const routeApi = getRouteApi("/");
 
 export function CatalogSearch() {
-  const { musicKit, isAuthorized } = useMusicKit();
+  const { isAuthorized } = useMusicKit();
+  const playSongs = usePlaySongs();
   const { tab, q } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
 
@@ -51,25 +53,13 @@ export function CatalogSearch() {
     navigate({ search: { tab: newType, q: urlQuery || undefined } });
   };
 
-  const playSong = async (song: Song) => {
-    if (!musicKit) return;
-    try {
-      await musicKit.setQueue({ song: song.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[CatalogSearch] Play failed:", err);
-    }
-  };
-
-  const playPlaylist = async (playlist: Playlist) => {
-    if (!musicKit) return;
-    try {
-      await musicKit.setQueue({ playlist: playlist.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[CatalogSearch] Play playlist failed:", err);
-    }
-  };
+  const handlePlaySongs = useCallback(
+    (idx: number) => {
+      const songIds = (results as Song[]).map((s) => s.id);
+      playSongs(songIds, idx);
+    },
+    [results, playSongs]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -93,17 +83,17 @@ export function CatalogSearch() {
       >
         <span
           className="w-6 text-center text-muted-foreground text-sm group-hover:hidden cursor-pointer"
-          onClick={() => playSong(song)}
+          onClick={() => handlePlaySongs(idx)}
         >
           {idx + 1}
         </span>
         <span
           className="w-6 text-center hidden group-hover:flex justify-center text-foreground cursor-pointer"
-          onClick={() => playSong(song)}
+          onClick={() => handlePlaySongs(idx)}
         >
           <Play className="h-4 w-4" />
         </span>
-        <div className="cursor-pointer" onClick={() => playSong(song)}>
+        <div className="cursor-pointer" onClick={() => handlePlaySongs(idx)}>
           {song.attributes.artwork ? (
             <img
               src={getArtworkUrl(song.attributes.artwork, 48)}
@@ -116,7 +106,7 @@ export function CatalogSearch() {
             </div>
           )}
         </div>
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => playSong(song)}>
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handlePlaySongs(idx)}>
           <p className="font-medium text-foreground truncate">{song.attributes.name}</p>
           <p className="text-sm text-muted-foreground truncate">
             {song.attributes.artistName}
@@ -156,7 +146,7 @@ export function CatalogSearch() {
         )}
       </div>
     ),
-    [musicKit, isAuthorized, addToPlaylistSongId]
+    [handlePlaySongs, isAuthorized, addToPlaylistSongId]
   );
 
   const renderAlbum = useCallback(
@@ -225,9 +215,10 @@ export function CatalogSearch() {
 
   const renderPlaylist = useCallback(
     (playlist: Playlist) => (
-      <div
+      <Link
         key={playlist.id}
-        onClick={() => playPlaylist(playlist)}
+        to="/playlists/$playlistId"
+        params={{ playlistId: playlist.id }}
         className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
       >
         {playlist.attributes.artwork ? (
@@ -249,10 +240,9 @@ export function CatalogSearch() {
             </p>
           )}
         </div>
-        <Play className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-      </div>
+      </Link>
     ),
-    [musicKit]
+    []
   );
 
   return (

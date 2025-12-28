@@ -54,6 +54,8 @@ export function MusicKitProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Schedule token refresh
+  // Note: We only update the token reference, NOT reconfigure MusicKit
+  // Reconfiguring during playback interrupts the stream
   const scheduleTokenRefresh = useCallback((tokenInfo: TokenInfo) => {
     if (refreshTimeoutRef.current) {
       clearTimeout(refreshTimeoutRef.current);
@@ -71,18 +73,15 @@ export function MusicKitProvider({ children }: { children: ReactNode }) {
           const newTokenInfo = await fetchToken();
           tokenInfoRef.current = newTokenInfo;
 
-          // Re-configure MusicKit with new token
-          if (window.MusicKit) {
-            await window.MusicKit.configure({
-              developerToken: newTokenInfo.token,
-              app: { name: APP_NAME, build: APP_BUILD },
-            });
-            const instance = window.MusicKit.getInstance();
-            setMusicKit(instance);
-            setIsAuthorized(instance.isAuthorized);
-            console.log("[MusicKit] Token refreshed successfully");
-            scheduleTokenRefresh(newTokenInfo);
+          // Update meta tag for future API calls, but DON'T reconfigure
+          // MusicKit keeps the active session and playback alive
+          const meta = document.querySelector('meta[name="apple-music-developer-token"]') as HTMLMetaElement | null;
+          if (meta) {
+            meta.content = newTokenInfo.token;
           }
+
+          console.log("[MusicKit] Token refreshed successfully (without reconfigure)");
+          scheduleTokenRefresh(newTokenInfo);
         } catch (err) {
           console.error("[MusicKit] Token refresh failed:", err);
           setError(err instanceof Error ? err.message : "Token refresh failed");

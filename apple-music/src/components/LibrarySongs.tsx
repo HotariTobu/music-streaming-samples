@@ -1,13 +1,13 @@
 import { useMemo, useCallback } from "react";
-import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useLibrarySongsInfinite } from "@/hooks/useLibrarySongsInfinite";
+import { usePlaySongs } from "@/hooks/usePlaySongs";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 import type { LibrarySong } from "@/schemas";
 import { Music, Play } from "lucide-react";
 import { VirtualList } from "./VirtualList";
 
 export function LibrarySongs() {
-  const { musicKit } = useMusicKit();
+  const playSongs = usePlaySongs();
   const query = useLibrarySongsInfinite();
 
   const songs = useMemo(
@@ -15,21 +15,19 @@ export function LibrarySongs() {
     [query.data]
   );
 
-  const playSong = async (song: LibrarySong) => {
-    if (!musicKit) return;
-    try {
-      await musicKit.setQueue({ song: song.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[LibrarySongs] Play failed:", err);
-    }
-  };
+  const handlePlay = useCallback(
+    (idx: number) => {
+      const songIds = songs.map((s) => s.id);
+      playSongs(songIds, idx);
+    },
+    [songs, playSongs]
+  );
 
   const renderSong = useCallback(
     (song: LibrarySong, idx: number) => (
       <div
         key={song.id}
-        onClick={() => playSong(song)}
+        onClick={() => handlePlay(idx)}
         className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
       >
         <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
@@ -60,7 +58,7 @@ export function LibrarySongs() {
         </div>
       </div>
     ),
-    [musicKit]
+    [handlePlay]
   );
 
   if (query.isLoading) {

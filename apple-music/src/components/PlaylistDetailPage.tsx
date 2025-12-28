@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMusicKit } from "@/contexts/MusicKitContext";
+import { usePlayPlaylist } from "@/hooks/usePlayPlaylist";
 import { useLibraryPlaylist } from "@/hooks/useLibraryPlaylist";
 import { usePlaylistTracksInfinite } from "@/hooks/usePlaylistTracksInfinite";
 import { useUpdatePlaylist } from "@/hooks/useUpdatePlaylist";
@@ -38,7 +39,8 @@ const playlistSchema = z.object({
 type PlaylistFormData = z.infer<typeof playlistSchema>;
 
 export function PlaylistDetailPage() {
-  const { musicKit, isAuthorized, authorize } = useMusicKit();
+  const { isAuthorized, authorize } = useMusicKit();
+  const playPlaylist = usePlayPlaylist();
   const { playlistId } = routeApi.useParams();
   const navigate = routeApi.useNavigate();
 
@@ -106,25 +108,14 @@ export function PlaylistDetailPage() {
     setShowDeleteConfirm(false);
   };
 
-  const playPlaylist = async () => {
-    if (!musicKit || !playlist) return;
-    try {
-      await musicKit.setQueue({ playlist: playlist.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[PlaylistDetailPage] Play playlist failed:", err);
-    }
+  const handlePlayPlaylist = () => {
+    if (!playlist) return;
+    playPlaylist(playlist.id);
   };
 
-  const playSong = async (startIndex: number) => {
-    if (!musicKit || !playlist) return;
-    try {
-      await musicKit.setQueue({ playlist: playlist.id });
-      await musicKit.changeToMediaAtIndex(startIndex);
-      await musicKit.play();
-    } catch (err) {
-      console.error("[PlaylistDetailPage] Play song failed:", err);
-    }
+  const handlePlaySong = (startIndex: number) => {
+    if (!playlist) return;
+    playPlaylist(playlist.id, startIndex);
   };
 
   // Render function for virtual list
@@ -132,7 +123,7 @@ export function PlaylistDetailPage() {
     (track: LibrarySong, idx: number) => (
       <div
         key={track.id}
-        onClick={() => playSong(idx)}
+        onClick={() => handlePlaySong(idx)}
         className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
       >
         <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
@@ -165,7 +156,7 @@ export function PlaylistDetailPage() {
         </div>
       </div>
     ),
-    [musicKit, playlist]
+    [handlePlaySong]
   );
 
   // Not authorized
@@ -350,7 +341,7 @@ export function PlaylistDetailPage() {
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={playPlaylist}
+                onClick={handlePlayPlaylist}
                 disabled={tracks.length === 0}
                 className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
               >
