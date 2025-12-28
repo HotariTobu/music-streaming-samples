@@ -16,6 +16,7 @@ export function PlaybackControls() {
     currentTime,
     duration,
     volume,
+    setVolume,
     queue,
     queuePosition,
   } = useMusicKitEvents();
@@ -53,10 +54,12 @@ export function PlaybackControls() {
 
   const handleVolumeChange = useCallback(
     (values: number[]) => {
-      if (!musicKit) return;
-      musicKit.volume = values[0];
+      setVolume(values[0]);
+      if (musicKit) {
+        musicKit.volume = values[0];
+      }
     },
-    [musicKit]
+    [musicKit, setVolume]
   );
 
   const playQueueItem = useCallback(

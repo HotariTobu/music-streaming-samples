@@ -7,6 +7,7 @@ interface MusicKitEventState {
   currentTime: number;
   duration: number;
   volume: number;
+  setVolume: React.Dispatch<React.SetStateAction<number>>;
   queue: MusicKit.MediaItem[];
   queuePosition: number;
 }
@@ -34,7 +35,9 @@ export function useMusicKitEvents(): MusicKitEventState {
     setNowPlaying(musicKit.nowPlayingItem);
     setCurrentTime(musicKit.currentPlaybackTime);
     setDuration(musicKit.currentPlaybackDuration);
-    setVolume(musicKit.volume);
+    if (musicKit.volume !== undefined) {
+      setVolume(musicKit.volume);
+    }
     setQueue(musicKit.queue.items);
     setQueuePosition(musicKit.queue.position);
 
@@ -56,7 +59,9 @@ export function useMusicKitEvents(): MusicKitEventState {
     };
 
     const handleVolumeChange = (e: { volume: number }) => {
-      setVolume(e.volume);
+      if (e.volume !== undefined) {
+        setVolume(e.volume);
+      }
     };
 
     const handleQueueChange = (e: { items: MusicKit.MediaItem[] }) => {
@@ -94,6 +99,7 @@ export function useMusicKitEvents(): MusicKitEventState {
     currentTime,
     duration,
     volume,
+    setVolume,
     queue,
     queuePosition,
   };
