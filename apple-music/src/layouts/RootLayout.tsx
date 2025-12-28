@@ -21,7 +21,7 @@ const navItems: {
   requiresAuth?: boolean;
 }[] = [
   { to: "/search/songs", label: "Search", icon: <Search className="h-4 w-4" /> },
-  { to: "/charts", label: "Charts", icon: <BarChart3 className="h-4 w-4" /> },
+  { to: "/charts/songs", label: "Charts", icon: <BarChart3 className="h-4 w-4" /> },
   {
     to: "/library",
     label: "Library",

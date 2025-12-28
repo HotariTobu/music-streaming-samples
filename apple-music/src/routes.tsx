@@ -8,11 +8,14 @@ import {
 import { z } from "zod";
 import { RootLayout } from "./layouts/RootLayout";
 import { SearchLayout } from "./layouts/SearchLayout";
+import { ChartsLayout } from "./layouts/ChartsLayout";
 import { CatalogSearchSongs } from "./components/CatalogSearchSongs";
 import { CatalogSearchAlbums } from "./components/CatalogSearchAlbums";
 import { CatalogSearchArtists } from "./components/CatalogSearchArtists";
 import { CatalogSearchPlaylists } from "./components/CatalogSearchPlaylists";
-import { Charts } from "./components/Charts";
+import { SongsChart } from "./components/SongsChart";
+import { AlbumsChart } from "./components/AlbumsChart";
+import { PlaylistsChart } from "./components/PlaylistsChart";
 import { UserLibrary } from "./components/UserLibrary";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { CatalogAlbumDetailPage } from "./components/CatalogAlbumDetailPage";
@@ -23,10 +26,6 @@ import { LibraryPlaylistDetailPage } from "./components/LibraryPlaylistDetailPag
 // Search params schemas
 const searchQuerySchema = z.object({
   q: z.string().optional(),
-});
-
-const chartsTabSchema = z.object({
-  tab: z.enum(["songs", "albums", "playlists"]).default("songs"),
 });
 
 const libraryTabSchema = z.object({
@@ -106,12 +105,50 @@ const searchPlaylistDetailRoute = createRoute({
   },
 });
 
-// Charts route
+// Charts layout route
 const chartsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/charts",
-  component: Charts,
-  validateSearch: chartsTabSchema,
+  component: ChartsLayout,
+});
+
+// Charts child routes
+const chartsSongsRoute = createRoute({
+  getParentRoute: () => chartsRoute,
+  path: "/songs",
+  component: SongsChart,
+});
+
+const chartsAlbumsRoute = createRoute({
+  getParentRoute: () => chartsRoute,
+  path: "/albums",
+  component: AlbumsChart,
+});
+
+const chartsPlaylistsRoute = createRoute({
+  getParentRoute: () => chartsRoute,
+  path: "/playlists",
+  component: PlaylistsChart,
+});
+
+// Charts album detail route
+const chartsAlbumDetailRoute = createRoute({
+  getParentRoute: () => chartsRoute,
+  path: "/albums/$albumId",
+  component: function ChartsAlbumRoute() {
+    const { albumId } = getRouteApi("/charts/albums/$albumId").useParams();
+    return <CatalogAlbumDetailPage albumId={albumId} backTo="/charts/albums" />;
+  },
+});
+
+// Charts playlist detail route
+const chartsPlaylistDetailRoute = createRoute({
+  getParentRoute: () => chartsRoute,
+  path: "/playlists/$playlistId",
+  component: function ChartsPlaylistRoute() {
+    const { playlistId } = getRouteApi("/charts/playlists/$playlistId").useParams();
+    return <CatalogPlaylistDetailPage playlistId={playlistId} backTo="/charts/playlists" />;
+  },
 });
 
 // Library route
@@ -120,25 +157,6 @@ const libraryRoute = createRoute({
   path: "/library",
   component: UserLibrary,
   validateSearch: libraryTabSchema,
-});
-
-// Charts album/playlist detail routes
-const chartsAlbumDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/charts/albums/$albumId",
-  component: function ChartsAlbumRoute() {
-    const { albumId } = getRouteApi("/charts/albums/$albumId").useParams();
-    return <CatalogAlbumDetailPage albumId={albumId} backTo="/charts?tab=albums" />;
-  },
-});
-
-const chartsPlaylistDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/charts/playlists/$playlistId",
-  component: function ChartsPlaylistRoute() {
-    const { playlistId } = getRouteApi("/charts/playlists/$playlistId").useParams();
-    return <CatalogPlaylistDetailPage playlistId={playlistId} backTo="/charts?tab=playlists" />;
-  },
 });
 
 // Library detail routes
@@ -196,10 +214,14 @@ const routeTree = rootRoute.addChildren([
     searchAlbumDetailRoute,
     searchPlaylistDetailRoute,
   ]),
-  chartsRoute,
+  chartsRoute.addChildren([
+    chartsSongsRoute,
+    chartsAlbumsRoute,
+    chartsPlaylistsRoute,
+    chartsAlbumDetailRoute,
+    chartsPlaylistDetailRoute,
+  ]),
   libraryRoute,
-  chartsAlbumDetailRoute,
-  chartsPlaylistDetailRoute,
   recentAlbumDetailRoute,
   recentPlaylistDetailRoute,
   libraryAlbumDetailRoute,
