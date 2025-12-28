@@ -1,67 +1,19 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useMusicKit } from "@/contexts/MusicKitContext";
+import { useCharts } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 
 type ChartType = "songs" | "albums" | "playlists";
 
-interface ChartsState {
-  type: ChartType;
-  songs: MusicKit.Song[];
-  albums: MusicKit.Album[];
-  playlists: MusicKit.Playlist[];
-  loading: boolean;
-  error: string | null;
-}
-
 export function Charts() {
   const { musicKit } = useMusicKit();
-  const [state, setState] = useState<ChartsState>({
-    type: "songs",
-    songs: [],
-    albums: [],
-    playlists: [],
-    loading: false,
-    error: null,
-  });
+  const [type, setType] = useState<ChartType>("songs");
 
-  const fetchCharts = useCallback(async () => {
-    if (!musicKit) return;
+  const { data, isLoading, error, refetch } = useCharts();
 
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      // Use {{storefrontId}} template token - automatically replaced with user's storefront
-      const response = await musicKit.api.music<MusicKit.ChartsResults>(
-        "/v1/catalog/{{storefrontId}}/charts",
-        {
-          types: "songs,albums,playlists",
-          limit: 20,
-        }
-      );
-
-      const results = response.data.results;
-      setState((prev) => ({
-        ...prev,
-        songs: results.songs?.[0]?.data || [],
-        albums: results.albums?.[0]?.data || [],
-        playlists: results.playlists?.[0]?.data || [],
-        loading: false,
-      }));
-    } catch (err) {
-      console.error("[Charts] Fetch failed:", err);
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : "Failed to load charts",
-      }));
-    }
-  }, [musicKit]);
-
-  useEffect(() => {
-    if (musicKit) {
-      fetchCharts();
-    }
-  }, [musicKit, fetchCharts]);
+  const songs = data?.songs ?? [];
+  const albums = data?.albums ?? [];
+  const playlists = data?.playlists ?? [];
 
   const playSong = async (song: MusicKit.Song) => {
     if (!musicKit) return;
@@ -99,7 +51,7 @@ export function Charts() {
     { type: "playlists", label: "Top Playlists", icon: "📋" },
   ];
 
-  if (state.loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -107,12 +59,12 @@ export function Charts() {
     );
   }
 
-  if (state.error) {
+  if (error) {
     return (
       <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-        {state.error}
+        {error instanceof Error ? error.message : "Failed to load charts"}
         <button
-          onClick={fetchCharts}
+          onClick={() => refetch()}
           className="ml-4 underline hover:no-underline"
         >
           Retry
@@ -125,13 +77,13 @@ export function Charts() {
     <div className="space-y-4">
       {/* Type Selector */}
       <div className="flex gap-2">
-        {chartTypes.map(({ type, label, icon }) => (
+        {chartTypes.map(({ type: t, label, icon }) => (
           <button
-            key={type}
-            onClick={() => setState((prev) => ({ ...prev, type }))}
+            key={t}
+            onClick={() => setType(t)}
             className={`
               px-4 py-2 rounded-full text-sm font-medium transition-all
-              ${state.type === type
+              ${type === t
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:bg-secondary/80"
               }
@@ -144,9 +96,9 @@ export function Charts() {
       </div>
 
       {/* Top Songs */}
-      {state.type === "songs" && (
+      {type === "songs" && (
         <div className="space-y-1">
-          {state.songs.map((song, idx) => (
+          {songs.map((song, idx) => (
             <div
               key={song.id}
               onClick={() => playSong(song)}
@@ -187,9 +139,9 @@ export function Charts() {
       )}
 
       {/* Top Albums */}
-      {state.type === "albums" && (
+      {type === "albums" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {state.albums.map((album, idx) => (
+          {albums.map((album, idx) => (
             <div
               key={album.id}
               onClick={() => playAlbum(album)}
@@ -225,9 +177,9 @@ export function Charts() {
       )}
 
       {/* Top Playlists */}
-      {state.type === "playlists" && (
+      {type === "playlists" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {state.playlists.map((playlist, idx) => (
+          {playlists.map((playlist, idx) => (
             <div
               key={playlist.id}
               onClick={() => playPlaylist(playlist)}
@@ -265,7 +217,7 @@ export function Charts() {
       )}
 
       {/* Empty State */}
-      {state.songs.length === 0 && state.albums.length === 0 && state.playlists.length === 0 && (
+      {songs.length === 0 && albums.length === 0 && playlists.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <div className="text-4xl mb-2">📊</div>
           <p>No chart data available</p>

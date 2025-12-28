@@ -1,48 +1,53 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, type FormEvent } from "react";
+
+const credentialsSchema = z.object({
+  teamId: z.string().min(1, "Team ID is required"),
+  keyId: z.string().min(1, "Key ID is required"),
+  privateKey: z.string().min(1, "Private Key is required"),
+});
+
+type CredentialsFormData = z.infer<typeof credentialsSchema>;
 
 interface CredentialsFormProps {
   onConfigured: () => void;
 }
 
 export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CredentialsFormData>({
+    resolver: zodResolver(credentialsSchema),
+  });
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    const credentials = {
-      teamId: formData.get("teamId") as string,
-      keyId: formData.get("keyId") as string,
-      privateKey: formData.get("privateKey") as string,
-    };
+  const onSubmit = async (data: CredentialsFormData) => {
+    setSubmitError(null);
 
     try {
       const res = await fetch("/api/credentials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to save credentials");
+        const resData = await res.json();
+        throw new Error(resData.error || "Failed to save credentials");
       }
 
       onConfigured();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
+      setSubmitError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -56,15 +61,17 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor="teamId">Team ID</Label>
           <Input
             id="teamId"
-            name="teamId"
             placeholder="XXXXXXXXXX"
-            required
+            {...register("teamId")}
           />
+          {errors.teamId && (
+            <p className="text-xs text-destructive">{errors.teamId.message}</p>
+          )}
           <p className="text-xs text-muted-foreground">
             Found in Apple Developer account settings
           </p>
@@ -74,10 +81,12 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
           <Label htmlFor="keyId">Key ID</Label>
           <Input
             id="keyId"
-            name="keyId"
             placeholder="XXXXXXXXXX"
-            required
+            {...register("keyId")}
           />
+          {errors.keyId && (
+            <p className="text-xs text-destructive">{errors.keyId.message}</p>
+          )}
           <p className="text-xs text-muted-foreground">
             10-character key identifier from MusicKit key
           </p>
@@ -87,28 +96,30 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
           <Label htmlFor="privateKey">Private Key (.p8 contents)</Label>
           <Textarea
             id="privateKey"
-            name="privateKey"
             placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
             className="font-mono text-xs min-h-[140px]"
-            required
+            {...register("privateKey")}
           />
+          {errors.privateKey && (
+            <p className="text-xs text-destructive">{errors.privateKey.message}</p>
+          )}
           <p className="text-xs text-muted-foreground">
             Paste the entire contents of your .p8 file
           </p>
         </div>
 
-        {error && (
+        {submitError && (
           <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-            {error}
+            {submitError}
           </div>
         )}
 
         <Button
           type="submit"
-          disabled={loading}
+          disabled={isSubmitting}
           className="w-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
         >
-          {loading ? (
+          {isSubmitting ? (
             <span className="flex items-center gap-2">
               <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
               Configuring...

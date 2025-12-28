@@ -1,112 +1,55 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useMusicKit } from "@/contexts/MusicKitContext";
+import {
+  useLibrarySongs,
+  useLibraryAlbums,
+  useLibraryPlaylists,
+  useLibraryArtists,
+  useRecentlyPlayed,
+} from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 
 type LibraryTab = "songs" | "albums" | "playlists" | "artists" | "recent";
 
-interface LibraryState {
-  tab: LibraryTab;
-  songs: MusicKit.LibrarySong[];
-  albums: MusicKit.LibraryAlbum[];
-  playlists: MusicKit.LibraryPlaylist[];
-  artists: MusicKit.LibraryArtist[];
-  recentlyPlayed: (MusicKit.Album | MusicKit.Playlist | MusicKit.Station)[];
-  loading: boolean;
-  error: string | null;
-}
-
 export function UserLibrary() {
   const { musicKit, isAuthorized, authorize } = useMusicKit();
-  const [state, setState] = useState<LibraryState>({
-    tab: "songs",
-    songs: [],
-    albums: [],
-    playlists: [],
-    artists: [],
-    recentlyPlayed: [],
-    loading: false,
-    error: null,
-  });
+  const [tab, setTab] = useState<LibraryTab>("songs");
 
-  const fetchLibrary = useCallback(async (tab: LibraryTab) => {
-    if (!musicKit || !isAuthorized) return;
+  // Fetch data only for the active tab
+  const songsQuery = useLibrarySongs(tab === "songs");
+  const albumsQuery = useLibraryAlbums(tab === "albums");
+  const playlistsQuery = useLibraryPlaylists(tab === "playlists");
+  const artistsQuery = useLibraryArtists(tab === "artists");
+  const recentQuery = useRecentlyPlayed(tab === "recent");
 
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const isLoading =
+    (tab === "songs" && songsQuery.isLoading) ||
+    (tab === "albums" && albumsQuery.isLoading) ||
+    (tab === "playlists" && playlistsQuery.isLoading) ||
+    (tab === "artists" && artistsQuery.isLoading) ||
+    (tab === "recent" && recentQuery.isLoading);
 
-    try {
-      let data: unknown[] = [];
+  const error =
+    (tab === "songs" && songsQuery.error) ||
+    (tab === "albums" && albumsQuery.error) ||
+    (tab === "playlists" && playlistsQuery.error) ||
+    (tab === "artists" && artistsQuery.error) ||
+    (tab === "recent" && recentQuery.error);
 
-      switch (tab) {
-        case "songs": {
-          const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibrarySong>>(
-            "/v1/me/library/songs",
-            { limit: 50 }
-          );
-          data = res.data.data;
-          setState((prev) => ({ ...prev, songs: data as MusicKit.LibrarySong[], loading: false }));
-          break;
-        }
-        case "albums": {
-          const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryAlbum>>(
-            "/v1/me/library/albums",
-            { limit: 50 }
-          );
-          data = res.data.data;
-          setState((prev) => ({ ...prev, albums: data as MusicKit.LibraryAlbum[], loading: false }));
-          break;
-        }
-        case "playlists": {
-          const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryPlaylist>>(
-            "/v1/me/library/playlists",
-            { limit: 50 }
-          );
-          data = res.data.data;
-          setState((prev) => ({ ...prev, playlists: data as MusicKit.LibraryPlaylist[], loading: false }));
-          break;
-        }
-        case "artists": {
-          const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryArtist>>(
-            "/v1/me/library/artists",
-            { limit: 50 }
-          );
-          data = res.data.data;
-          setState((prev) => ({ ...prev, artists: data as MusicKit.LibraryArtist[], loading: false }));
-          break;
-        }
-        case "recent": {
-          const res = await musicKit.api.music<MusicKit.RecentlyPlayedResults>(
-            "/v1/me/recent/played",
-            { limit: 10 }
-          );
-          data = res.data.data;
-          setState((prev) => ({
-            ...prev,
-            recentlyPlayed: data as (MusicKit.Album | MusicKit.Playlist | MusicKit.Station)[],
-            loading: false,
-          }));
-          break;
-        }
-      }
-    } catch (err) {
-      console.error("[UserLibrary] Fetch failed:", err);
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : "Failed to load library",
-      }));
-    }
-  }, [musicKit, isAuthorized]);
-
-  useEffect(() => {
-    if (isAuthorized) {
-      fetchLibrary(state.tab);
-    }
-  }, [isAuthorized, state.tab, fetchLibrary]);
-
-  const changeTab = (tab: LibraryTab) => {
-    setState((prev) => ({ ...prev, tab }));
+  const refetch = () => {
+    if (tab === "songs") songsQuery.refetch();
+    if (tab === "albums") albumsQuery.refetch();
+    if (tab === "playlists") playlistsQuery.refetch();
+    if (tab === "artists") artistsQuery.refetch();
+    if (tab === "recent") recentQuery.refetch();
   };
+
+  const songs = songsQuery.data ?? [];
+  const albums = albumsQuery.data ?? [];
+  const playlists = playlistsQuery.data ?? [];
+  const artists = artistsQuery.data ?? [];
+  const recentlyPlayed = recentQuery.data ?? [];
 
   const playSong = async (song: MusicKit.LibrarySong) => {
     if (!musicKit) return;
@@ -173,13 +116,13 @@ export function UserLibrary() {
     <div className="space-y-4">
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
-        {tabs.map(({ tab, label, icon }) => (
+        {tabs.map(({ tab: t, label, icon }) => (
           <button
-            key={tab}
-            onClick={() => changeTab(tab)}
+            key={t}
+            onClick={() => setTab(t)}
             className={`
               px-4 py-2 rounded-full text-sm font-medium transition-all
-              ${state.tab === tab
+              ${tab === t
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:bg-secondary/80"
               }
@@ -192,18 +135,18 @@ export function UserLibrary() {
       </div>
 
       {/* Loading */}
-      {state.loading && (
+      {isLoading && (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
       )}
 
       {/* Error */}
-      {state.error && (
+      {error && (
         <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-          {state.error}
+          {error instanceof Error ? error.message : "Failed to load library"}
           <button
-            onClick={() => fetchLibrary(state.tab)}
+            onClick={refetch}
             className="ml-4 underline hover:no-underline"
           >
             Retry
@@ -212,15 +155,15 @@ export function UserLibrary() {
       )}
 
       {/* Library Songs */}
-      {!state.loading && state.tab === "songs" && (
+      {!isLoading && tab === "songs" && (
         <div className="space-y-1">
-          {state.songs.length === 0 ? (
+          {songs.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">🎵</div>
               <p>No songs in your library</p>
             </div>
           ) : (
-            state.songs.map((song, idx) => (
+            songs.map((song, idx) => (
               <div
                 key={song.id}
                 onClick={() => playSong(song)}
@@ -259,15 +202,15 @@ export function UserLibrary() {
       )}
 
       {/* Library Albums */}
-      {!state.loading && state.tab === "albums" && (
+      {!isLoading && tab === "albums" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {state.albums.length === 0 ? (
+          {albums.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">💿</div>
               <p>No albums in your library</p>
             </div>
           ) : (
-            state.albums.map((album) => (
+            albums.map((album) => (
               <div
                 key={album.id}
                 onClick={() => playAlbum(album)}
@@ -298,15 +241,15 @@ export function UserLibrary() {
       )}
 
       {/* Library Playlists */}
-      {!state.loading && state.tab === "playlists" && (
+      {!isLoading && tab === "playlists" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {state.playlists.length === 0 ? (
+          {playlists.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">📋</div>
               <p>No playlists in your library</p>
             </div>
           ) : (
-            state.playlists.map((playlist) => (
+            playlists.map((playlist) => (
               <div
                 key={playlist.id}
                 onClick={() => playPlaylist(playlist)}
@@ -341,15 +284,15 @@ export function UserLibrary() {
       )}
 
       {/* Library Artists */}
-      {!state.loading && state.tab === "artists" && (
+      {!isLoading && tab === "artists" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {state.artists.length === 0 ? (
+          {artists.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">🎤</div>
               <p>No artists in your library</p>
             </div>
           ) : (
-            state.artists.map((artist) => (
+            artists.map((artist) => (
               <div key={artist.id} className="text-center">
                 <div className="w-24 h-24 mx-auto rounded-full bg-secondary flex items-center justify-center text-3xl mb-2">
                   🎤
@@ -362,15 +305,15 @@ export function UserLibrary() {
       )}
 
       {/* Recently Played */}
-      {!state.loading && state.tab === "recent" && (
+      {!isLoading && tab === "recent" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {state.recentlyPlayed.length === 0 ? (
+          {recentlyPlayed.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               <div className="text-4xl mb-2">🕐</div>
               <p>No recently played items</p>
             </div>
           ) : (
-            state.recentlyPlayed.map((item) => (
+            recentlyPlayed.map((item) => (
               <div key={item.id} className="group cursor-pointer">
                 <div className="relative aspect-square mb-2">
                   {item.attributes.artwork ? (

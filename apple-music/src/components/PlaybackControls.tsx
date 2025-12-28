@@ -1,77 +1,20 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useMusicKit } from "@/contexts/MusicKitContext";
+import { useMusicKitEvents } from "@/hooks/useMusicKitEvents";
 import { formatDuration, getArtworkUrl, getPlaybackStateLabel } from "@/lib/utils";
 
 export function PlaybackControls() {
   const { musicKit, isAuthorized } = useMusicKit();
-  const [playbackState, setPlaybackState] = useState<MusicKit.PlaybackStates>(0);
-  const [nowPlaying, setNowPlaying] = useState<MusicKit.MediaItem | undefined>();
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [queue, setQueue] = useState<MusicKit.MediaItem[]>([]);
-  const [queuePosition, setQueuePosition] = useState(0);
+  const {
+    playbackState,
+    nowPlaying,
+    currentTime,
+    duration,
+    volume,
+    queue,
+    queuePosition,
+  } = useMusicKitEvents();
   const progressRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!musicKit) return;
-
-    // Initial state
-    setPlaybackState(musicKit.playbackState);
-    setNowPlaying(musicKit.nowPlayingItem);
-    setCurrentTime(musicKit.currentPlaybackTime);
-    setDuration(musicKit.currentPlaybackDuration);
-    setVolume(musicKit.volume);
-    setQueue(musicKit.queue.items);
-    setQueuePosition(musicKit.queue.position);
-
-    // Event listeners
-    const handlePlaybackState = (e: { state: MusicKit.PlaybackStates }) => {
-      setPlaybackState(e.state);
-    };
-
-    const handleNowPlaying = (e: { item: MusicKit.MediaItem | undefined }) => {
-      setNowPlaying(e.item);
-    };
-
-    const handleTimeChange = (e: { currentPlaybackTime: number }) => {
-      setCurrentTime(e.currentPlaybackTime);
-    };
-
-    const handleDurationChange = (e: { duration: number }) => {
-      setDuration(e.duration);
-    };
-
-    const handleVolumeChange = (e: { volume: number }) => {
-      setVolume(e.volume);
-    };
-
-    const handleQueueChange = (e: { items: MusicKit.MediaItem[] }) => {
-      setQueue(e.items);
-    };
-
-    const handleQueuePosition = (e: { position: number }) => {
-      setQueuePosition(e.position);
-    };
-
-    musicKit.addEventListener("playbackStateDidChange", handlePlaybackState);
-    musicKit.addEventListener("nowPlayingItemDidChange", handleNowPlaying);
-    musicKit.addEventListener("playbackTimeDidChange", handleTimeChange);
-    musicKit.addEventListener("playbackDurationDidChange", handleDurationChange);
-    musicKit.addEventListener("playbackVolumeDidChange", handleVolumeChange);
-    musicKit.addEventListener("queueItemsDidChange", handleQueueChange);
-    musicKit.addEventListener("queuePositionDidChange", handleQueuePosition);
-
-    return () => {
-      musicKit.removeEventListener("playbackStateDidChange", handlePlaybackState);
-      musicKit.removeEventListener("nowPlayingItemDidChange", handleNowPlaying);
-      musicKit.removeEventListener("playbackTimeDidChange", handleTimeChange);
-      musicKit.removeEventListener("playbackDurationDidChange", handleDurationChange);
-      musicKit.removeEventListener("playbackVolumeDidChange", handleVolumeChange);
-      musicKit.removeEventListener("queueItemsDidChange", handleQueueChange);
-      musicKit.removeEventListener("queuePositionDidChange", handleQueuePosition);
-    };
-  }, [musicKit]);
 
   const togglePlayPause = useCallback(async () => {
     if (!musicKit) return;
@@ -107,7 +50,6 @@ export function PlaybackControls() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!musicKit) return;
       const newVolume = parseFloat(e.target.value);
-      // v3 uses direct property setter instead of setVolume method
       musicKit.volume = newVolume;
     },
     [musicKit]

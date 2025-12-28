@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { CredentialsForm } from "./components/CredentialsForm";
 import { CatalogSearch } from "./components/CatalogSearch";
@@ -9,6 +10,15 @@ import { ThemeToggle } from "./components/ThemeToggle";
 import { MusicKitProvider, useMusicKit } from "./contexts/MusicKitContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import "./index.css";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 type Tab = "search" | "charts" | "library" | "playback";
 
@@ -183,11 +193,13 @@ function AppContent() {
 
 export function App() {
   return (
-    <ThemeProvider>
-      <MusicKitProvider>
-        <AppContent />
-      </MusicKitProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <MusicKitProvider>
+          <AppContent />
+        </MusicKitProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

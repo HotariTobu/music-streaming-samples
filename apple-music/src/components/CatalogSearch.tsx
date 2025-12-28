@@ -1,68 +1,33 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMusicKit } from "@/contexts/MusicKitContext";
+import { useCatalogSearch } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 
 type SearchType = "songs" | "albums" | "artists" | "playlists";
 
-interface SearchState {
-  query: string;
-  type: SearchType;
-  results: (MusicKit.Song | MusicKit.Album | MusicKit.Artist | MusicKit.Playlist)[];
-  loading: boolean;
-  error: string | null;
-}
-
 export function CatalogSearch() {
   const { musicKit } = useMusicKit();
-  const [state, setState] = useState<SearchState>({
-    query: "",
-    type: "songs",
-    results: [],
-    loading: false,
-    error: null,
-  });
+  const [inputQuery, setInputQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [type, setType] = useState<SearchType>("songs");
 
-  const search = useCallback(async () => {
-    if (!musicKit || !state.query.trim()) return;
+  const { data: results = [], isLoading, error } = useCatalogSearch(searchQuery, type);
 
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      // Use {{storefrontId}} template token - automatically replaced with user's storefront
-      const response = await musicKit.api.music<MusicKit.SearchResults>(
-        "/v1/catalog/{{storefrontId}}/search",
-        {
-          term: state.query,
-          types: state.type,
-          limit: 25,
-        }
-      );
-
-      const resultsData = response.data.results;
-      let results: (MusicKit.Song | MusicKit.Album | MusicKit.Artist | MusicKit.Playlist)[] = [];
-
-      if (state.type === "songs" && resultsData.songs?.data) {
-        results = resultsData.songs.data;
-      } else if (state.type === "albums" && resultsData.albums?.data) {
-        results = resultsData.albums.data;
-      } else if (state.type === "artists" && resultsData.artists?.data) {
-        results = resultsData.artists.data;
-      } else if (state.type === "playlists" && resultsData.playlists?.data) {
-        results = resultsData.playlists.data;
-      }
-
-      setState((prev) => ({ ...prev, results, loading: false }));
-    } catch (err) {
-      console.error("[CatalogSearch] Search failed:", err);
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : "Search failed",
-      }));
+  const handleSearch = () => {
+    if (inputQuery.trim()) {
+      setSearchQuery(inputQuery.trim());
     }
-  }, [musicKit, state.query, state.type]);
+  };
+
+  const handleTypeChange = (newType: SearchType) => {
+    setType(newType);
+    if (searchQuery) {
+      // Re-search with new type
+      setSearchQuery(inputQuery.trim());
+    }
+  };
 
   const playSong = async (song: MusicKit.Song) => {
     if (!musicKit) return;
@@ -96,7 +61,7 @@ export function CatalogSearch() {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      search();
+      handleSearch();
     }
   };
 
@@ -117,30 +82,30 @@ export function CatalogSearch() {
           </span>
           <Input
             placeholder="Search Apple Music catalog..."
-            value={state.query}
-            onChange={(e) => setState((prev) => ({ ...prev, query: e.target.value }))}
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             className="pl-10 h-12"
           />
         </div>
         <Button
-          onClick={search}
-          disabled={state.loading || !state.query.trim()}
+          onClick={handleSearch}
+          disabled={isLoading || !inputQuery.trim()}
           className="h-12 px-6 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
         >
-          {state.loading ? "..." : "Search"}
+          {isLoading ? "..." : "Search"}
         </Button>
       </div>
 
       {/* Type Selector */}
       <div className="flex gap-2">
-        {searchTypes.map(({ type, label, icon }) => (
+        {searchTypes.map(({ type: t, label, icon }) => (
           <button
-            key={type}
-            onClick={() => setState((prev) => ({ ...prev, type, results: [] }))}
+            key={t}
+            onClick={() => handleTypeChange(t)}
             className={`
               px-4 py-2 rounded-full text-sm font-medium transition-all
-              ${state.type === type
+              ${type === t
                 ? "bg-foreground text-background"
                 : "bg-secondary text-muted-foreground hover:bg-secondary/80"
               }
@@ -153,17 +118,17 @@ export function CatalogSearch() {
       </div>
 
       {/* Error */}
-      {state.error && (
+      {error && (
         <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-          {state.error}
+          {error instanceof Error ? error.message : "Search failed"}
         </div>
       )}
 
       {/* Results */}
-      {state.results.length > 0 && (
+      {results.length > 0 && (
         <div className="space-y-1">
-          {state.type === "songs" &&
-            (state.results as MusicKit.Song[]).map((song, idx) => (
+          {type === "songs" &&
+            (results as MusicKit.Song[]).map((song, idx) => (
               <div
                 key={song.id}
                 onClick={() => playSong(song)}
@@ -201,8 +166,8 @@ export function CatalogSearch() {
               </div>
             ))}
 
-          {state.type === "albums" &&
-            (state.results as MusicKit.Album[]).map((album) => (
+          {type === "albums" &&
+            (results as MusicKit.Album[]).map((album) => (
               <div
                 key={album.id}
                 onClick={() => playAlbum(album)}
@@ -233,8 +198,8 @@ export function CatalogSearch() {
               </div>
             ))}
 
-          {state.type === "artists" &&
-            (state.results as MusicKit.Artist[]).map((artist) => (
+          {type === "artists" &&
+            (results as MusicKit.Artist[]).map((artist) => (
               <div
                 key={artist.id}
                 className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 transition-colors"
@@ -261,8 +226,8 @@ export function CatalogSearch() {
               </div>
             ))}
 
-          {state.type === "playlists" &&
-            (state.results as MusicKit.Playlist[]).map((playlist) => (
+          {type === "playlists" &&
+            (results as MusicKit.Playlist[]).map((playlist) => (
               <div
                 key={playlist.id}
                 onClick={() => playPlaylist(playlist)}
@@ -294,15 +259,15 @@ export function CatalogSearch() {
       )}
 
       {/* Empty State */}
-      {!state.loading && state.results.length === 0 && state.query && (
+      {!isLoading && results.length === 0 && searchQuery && (
         <div className="text-center py-12 text-muted-foreground">
           <div className="text-4xl mb-2">🔍</div>
-          <p>No results found for "{state.query}"</p>
+          <p>No results found for "{searchQuery}"</p>
         </div>
       )}
 
       {/* Initial State */}
-      {!state.query && state.results.length === 0 && (
+      {!inputQuery && results.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <div className="text-4xl mb-2">🎵</div>
           <p>Search for songs, albums, artists, or playlists</p>
