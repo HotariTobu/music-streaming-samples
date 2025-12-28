@@ -54,6 +54,13 @@ const libraryRoute = createRoute({
   validateSearch: libraryTabSchema,
 });
 
+// Playlist detail route
+const playlistDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/library/playlists/$playlistId",
+  component: PlaylistDetailPage,
+});
+
 // Player route
 const playerRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -66,6 +73,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   chartsRoute,
   libraryRoute,
+  playlistDetailRoute,
   playerRoute,
 ]);
 

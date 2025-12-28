@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
@@ -13,7 +13,6 @@ import {
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 import { Music, Disc3, ListMusic, Mic2, Clock, Lock, Play, Plus } from "lucide-react";
 import { CreatePlaylistForm } from "./CreatePlaylistForm";
-import { PlaylistDetail } from "./PlaylistDetail";
 
 type LibraryTab = "songs" | "albums" | "playlists" | "artists" | "recent";
 
@@ -25,7 +24,6 @@ export function UserLibrary() {
   const navigate = routeApi.useNavigate();
 
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
-  const [selectedPlaylist, setSelectedPlaylist] = useState<MusicKit.LibraryPlaylist | null>(null);
 
   const handleTabChange = (newTab: LibraryTab) => {
     navigate({ search: { tab: newTab } });
@@ -242,71 +240,62 @@ export function UserLibrary() {
       {/* Library Playlists */}
       {!isLoading && tab === "playlists" && (
         <section className="space-y-4">
-          {/* Playlist Detail View */}
-          {selectedPlaylist ? (
-            <PlaylistDetail
-              playlist={selectedPlaylist}
-              onBack={() => setSelectedPlaylist(null)}
-              onDeleted={() => setSelectedPlaylist(null)}
+          {/* Create Playlist Form */}
+          {showCreatePlaylist && (
+            <CreatePlaylistForm
+              onClose={() => setShowCreatePlaylist(false)}
+              onSuccess={() => setShowCreatePlaylist(false)}
             />
-          ) : (
-            <>
-              {/* Create Playlist Form */}
-              {showCreatePlaylist && (
-                <CreatePlaylistForm
-                  onClose={() => setShowCreatePlaylist(false)}
-                  onSuccess={() => setShowCreatePlaylist(false)}
-                />
-              )}
-
-              {/* Create button */}
-              {!showCreatePlaylist && (
-                <Button
-                  onClick={() => setShowCreatePlaylist(true)}
-                  variant="secondary"
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New Playlist
-                </Button>
-              )}
-
-              {/* Playlist Grid */}
-              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 list-none p-0">
-                {playlists.length === 0 && !showCreatePlaylist ? (
-                  <li className="col-span-full text-center py-12 text-muted-foreground">
-                    <ListMusic className="h-10 w-10 mx-auto mb-2" />
-                    <p>No playlists in your library</p>
-                  </li>
-                ) : (
-                  playlists.map((playlist) => (
-                    <li
-                      key={playlist.id}
-                      className="group cursor-pointer"
-                      onClick={() => setSelectedPlaylist(playlist)}
-                    >
-                      <figure className="relative aspect-square mb-2">
-                        {playlist.attributes.artwork ? (
-                          <img
-                            src={getArtworkUrl(playlist.attributes.artwork, 200)}
-                            alt=""
-                            className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
-                          />
-                        ) : (
-                          <span className="w-full h-full rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
-                            <ListMusic className="h-10 w-10 text-white" />
-                          </span>
-                        )}
-                      </figure>
-                      <figcaption className="font-medium text-foreground text-sm truncate">
-                        {playlist.attributes.name}
-                      </figcaption>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </>
           )}
+
+          {/* Create button */}
+          {!showCreatePlaylist && (
+            <Button
+              onClick={() => setShowCreatePlaylist(true)}
+              variant="secondary"
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Playlist
+            </Button>
+          )}
+
+          {/* Playlist Grid */}
+          <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 list-none p-0">
+            {playlists.length === 0 && !showCreatePlaylist ? (
+              <li className="col-span-full text-center py-12 text-muted-foreground">
+                <ListMusic className="h-10 w-10 mx-auto mb-2" />
+                <p>No playlists in your library</p>
+              </li>
+            ) : (
+              playlists.map((playlist) => (
+                <li key={playlist.id} className="group">
+                  <Link
+                    to="/library/playlists/$playlistId"
+                    params={{ playlistId: playlist.id }}
+                    className="block"
+                  >
+                    <figure className="relative aspect-square mb-2">
+                      {playlist.attributes.artwork ? (
+                        <img
+                          src={getArtworkUrl(playlist.attributes.artwork, 200)}
+                          alt=""
+                          className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
+                        />
+                      ) : (
+                        <span className="w-full h-full rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
+                          <ListMusic className="h-10 w-10 text-white" />
+                        </span>
+                      )}
+                    </figure>
+                    <figcaption className="font-medium text-foreground text-sm truncate">
+                      {playlist.attributes.name}
+                    </figcaption>
+                  </Link>
+                </li>
+              ))
+            )}
+          </ul>
         </section>
       )}
 

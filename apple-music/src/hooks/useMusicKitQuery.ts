@@ -135,6 +135,27 @@ export function useLibraryPlaylists(enabled = true) {
 }
 
 /**
+ * Hook for fetching a single library playlist by ID
+ */
+export function useLibraryPlaylist(playlistId: string | undefined) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useQuery({
+    queryKey: ["library", "playlist", playlistId],
+    queryFn: async () => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+      if (!playlistId) throw new Error("Playlist ID is required");
+
+      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryPlaylist>>(
+        `/v1/me/library/playlists/${playlistId}`
+      );
+      return res.data.data[0];
+    },
+    enabled: !!musicKit && isAuthorized && !!playlistId,
+  });
+}
+
+/**
  * Hook for fetching user's library artists
  */
 export function useLibraryArtists(enabled = true) {
