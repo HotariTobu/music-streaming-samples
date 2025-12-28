@@ -10,6 +10,7 @@ import { Charts } from "./components/Charts";
 import { UserLibrary } from "./components/UserLibrary";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { PlaylistDetailPage } from "./components/PlaylistDetailPage";
+import { LibraryAlbumDetailPage, CatalogAlbumDetailPage, ChartsAlbumDetailPage } from "./components/AlbumDetailPage";
 
 // Search params schemas
 const searchTabSchema = z.object({
@@ -61,6 +62,25 @@ const playlistDetailRoute = createRoute({
   component: PlaylistDetailPage,
 });
 
+// Album detail routes
+const libraryAlbumDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/library/albums/$albumId",
+  component: LibraryAlbumDetailPage,
+});
+
+const catalogAlbumDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/albums/$albumId",
+  component: CatalogAlbumDetailPage,
+});
+
+const chartsAlbumDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/charts/albums/$albumId",
+  component: ChartsAlbumDetailPage,
+});
+
 // Player route
 const playerRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -74,6 +94,9 @@ const routeTree = rootRoute.addChildren([
   chartsRoute,
   libraryRoute,
   playlistDetailRoute,
+  libraryAlbumDetailRoute,
+  catalogAlbumDetailRoute,
+  chartsAlbumDetailRoute,
   playerRoute,
 ]);
 

@@ -129,7 +129,7 @@ export function RootLayout() {
             {navItems.map(({ to, label, icon, requiresAuth }) => {
               const isActive =
                 to === "/"
-                  ? location.pathname === "/"
+                  ? location.pathname === "/" || location.pathname.startsWith("/albums")
                   : location.pathname.startsWith(to);
               return (
                 <Button

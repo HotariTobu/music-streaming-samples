@@ -114,6 +114,92 @@ export function useLibraryAlbums(enabled = true) {
 }
 
 /**
+ * Hook for fetching a single library album by ID
+ */
+export function useLibraryAlbum(albumId: string | undefined) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useQuery({
+    queryKey: ["library", "album", albumId],
+    queryFn: async () => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+      if (!albumId) throw new Error("Album ID is required");
+
+      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryAlbum>>(
+        `/v1/me/library/albums/${albumId}`
+      );
+      return res.data.data[0];
+    },
+    enabled: !!musicKit && isAuthorized && !!albumId,
+  });
+}
+
+/**
+ * Hook for fetching a single catalog album by ID
+ */
+export function useCatalogAlbum(albumId: string | undefined) {
+  const { musicKit } = useMusicKit();
+
+  return useQuery({
+    queryKey: ["catalog", "album", albumId],
+    queryFn: async () => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+      if (!albumId) throw new Error("Album ID is required");
+
+      const res = await musicKit.api.music<MusicKit.CatalogResults<MusicKit.Album>>(
+        `/v1/catalog/{{storefrontId}}/albums/${albumId}`
+      );
+      return res.data.data[0];
+    },
+    enabled: !!musicKit && !!albumId,
+  });
+}
+
+/**
+ * Hook for fetching tracks of a library album
+ */
+export function useLibraryAlbumTracks(albumId: string | undefined) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useQuery({
+    queryKey: ["library", "album", albumId, "tracks"],
+    queryFn: async () => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+      if (!albumId) throw new Error("Album ID is required");
+
+      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibrarySong>>(
+        `/v1/me/library/albums/${albumId}/tracks`,
+        { limit: 100 }
+      );
+      return res.data.data;
+    },
+    enabled: !!musicKit && isAuthorized && !!albumId,
+  });
+}
+
+/**
+ * Hook for fetching tracks of a catalog album
+ */
+export function useCatalogAlbumTracks(albumId: string | undefined) {
+  const { musicKit } = useMusicKit();
+
+  return useQuery({
+    queryKey: ["catalog", "album", albumId, "tracks"],
+    queryFn: async () => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+      if (!albumId) throw new Error("Album ID is required");
+
+      const res = await musicKit.api.music<MusicKit.CatalogResults<MusicKit.Song>>(
+        `/v1/catalog/{{storefrontId}}/albums/${albumId}/tracks`,
+        { limit: 100 }
+      );
+      return res.data.data;
+    },
+    enabled: !!musicKit && !!albumId,
+  });
+}
+
+/**
  * Hook for fetching user's library playlists
  */
 export function useLibraryPlaylists(enabled = true) {

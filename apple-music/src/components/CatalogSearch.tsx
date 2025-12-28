@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -50,16 +50,6 @@ export function CatalogSearch() {
       await musicKit.play();
     } catch (err) {
       console.error("[CatalogSearch] Play failed:", err);
-    }
-  };
-
-  const playAlbum = async (album: MusicKit.Album) => {
-    if (!musicKit) return;
-    try {
-      await musicKit.setQueue({ album: album.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[CatalogSearch] Play album failed:", err);
     }
   };
 
@@ -221,9 +211,10 @@ export function CatalogSearch() {
 
           {type === "albums" &&
             (results as MusicKit.Album[]).map((album) => (
-              <div
+              <Link
                 key={album.id}
-                onClick={() => playAlbum(album)}
+                to="/albums/$albumId"
+                params={{ albumId: album.id }}
                 className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
               >
                 {album.attributes.artwork ? (
@@ -247,8 +238,7 @@ export function CatalogSearch() {
                     {album.attributes.releaseDate && ` • ${album.attributes.releaseDate.slice(0, 4)}`}
                   </p>
                 </div>
-                <Play className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </div>
+              </Link>
             ))}
 
           {type === "artists" &&

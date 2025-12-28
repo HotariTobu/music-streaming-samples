@@ -74,16 +74,6 @@ export function UserLibrary() {
     }
   };
 
-  const playAlbum = async (album: MusicKit.LibraryAlbum) => {
-    if (!musicKit) return;
-    try {
-      await musicKit.setQueue({ album: album.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[UserLibrary] Play album failed:", err);
-    }
-  };
-
   const tabs: { tab: LibraryTab; label: string; icon: React.ReactNode }[] = [
     { tab: "songs", label: "Songs", icon: <Music className="h-4 w-4" /> },
     { tab: "albums", label: "Albums", icon: <Disc3 className="h-4 w-4" /> },
@@ -208,10 +198,11 @@ export function UserLibrary() {
             </div>
           ) : (
             albums.map((album) => (
-              <div
+              <Link
                 key={album.id}
-                onClick={() => playAlbum(album)}
-                className="group cursor-pointer"
+                to="/library/albums/$albumId"
+                params={{ albumId: album.id }}
+                className="group cursor-pointer block"
               >
                 <div className="relative aspect-square mb-2">
                   {album.attributes.artwork ? (
@@ -225,13 +216,10 @@ export function UserLibrary() {
                       <Disc3 className="h-10 w-10 text-muted-foreground" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                    <Play className="h-8 w-8 text-white" />
-                  </div>
                 </div>
                 <p className="font-medium text-foreground text-sm truncate">{album.attributes.name}</p>
                 <p className="text-xs text-muted-foreground truncate">{album.attributes.artistName}</p>
-              </div>
+              </Link>
             ))
           )}
         </div>

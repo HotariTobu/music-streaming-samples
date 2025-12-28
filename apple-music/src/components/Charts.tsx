@@ -1,4 +1,4 @@
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
@@ -34,16 +34,6 @@ export function Charts() {
       await musicKit.play();
     } catch (err) {
       console.error("[Charts] Play failed:", err);
-    }
-  };
-
-  const playAlbum = async (album: MusicKit.Album) => {
-    if (!musicKit) return;
-    try {
-      await musicKit.setQueue({ album: album.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[Charts] Play album failed:", err);
     }
   };
 
@@ -146,10 +136,11 @@ export function Charts() {
       {type === "albums" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {albums.map((album, idx) => (
-            <div
+            <Link
               key={album.id}
-              onClick={() => playAlbum(album)}
-              className="group cursor-pointer"
+              to="/charts/albums/$albumId"
+              params={{ albumId: album.id }}
+              className="group cursor-pointer block"
             >
               <div className="relative aspect-square mb-2">
                 <span className={`
@@ -169,13 +160,10 @@ export function Charts() {
                     <Disc3 className="h-10 w-10 text-muted-foreground" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                  <Play className="h-8 w-8 text-white" />
-                </div>
               </div>
               <p className="font-medium text-foreground text-sm truncate">{album.attributes.name}</p>
               <p className="text-xs text-muted-foreground truncate">{album.attributes.artistName}</p>
-            </div>
+            </Link>
           ))}
         </div>
       )}
