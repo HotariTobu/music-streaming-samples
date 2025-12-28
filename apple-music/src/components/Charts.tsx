@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useCharts } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
+import { Music, Disc3, ListMusic, Play, BarChart3 } from "lucide-react";
 
 type ChartType = "songs" | "albums" | "playlists";
 
@@ -47,10 +48,10 @@ export function Charts() {
     }
   };
 
-  const chartTypes: { type: ChartType; label: string; icon: string }[] = [
-    { type: "songs", label: "Top Songs", icon: "🎵" },
-    { type: "albums", label: "Top Albums", icon: "💿" },
-    { type: "playlists", label: "Top Playlists", icon: "📋" },
+  const chartTypes: { type: ChartType; label: string; icon: React.ReactNode }[] = [
+    { type: "songs", label: "Top Songs", icon: <Music className="h-4 w-4" /> },
+    { type: "albums", label: "Top Albums", icon: <Disc3 className="h-4 w-4" /> },
+    { type: "playlists", label: "Top Playlists", icon: <ListMusic className="h-4 w-4" /> },
   ];
 
   if (isLoading) {
@@ -85,7 +86,7 @@ export function Charts() {
             onClick={() => setType(t)}
             className="rounded-full"
           >
-            <span className="mr-1">{icon}</span>
+            {icon}
             {label}
           </Button>
         ))}
@@ -114,7 +115,7 @@ export function Charts() {
                 />
               ) : (
                 <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
-                  ♫
+                  <Music className="h-5 w-5 text-muted-foreground" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -126,9 +127,7 @@ export function Charts() {
               <div className="text-sm text-muted-foreground w-12 text-right">
                 {formatDuration(song.attributes.durationInMillis)}
               </div>
-              <span className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                ▶
-              </span>
+              <Play className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           ))}
         </div>
@@ -157,12 +156,12 @@ export function Charts() {
                     className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center text-4xl">
-                    💿
+                  <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
+                    <Disc3 className="h-10 w-10 text-muted-foreground" />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                  <span className="text-white text-3xl">▶</span>
+                  <Play className="h-8 w-8 text-white" />
                 </div>
               </div>
               <p className="font-medium text-foreground text-sm truncate">{album.attributes.name}</p>
@@ -195,12 +194,12 @@ export function Charts() {
                     className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center text-4xl">
-                    📋
+                  <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
+                    <ListMusic className="h-10 w-10 text-muted-foreground" />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                  <span className="text-white text-3xl">▶</span>
+                  <Play className="h-8 w-8 text-white" />
                 </div>
               </div>
               <p className="font-medium text-foreground text-sm truncate">{playlist.attributes.name}</p>
@@ -215,7 +214,7 @@ export function Charts() {
       {/* Empty State */}
       {songs.length === 0 && albums.length === 0 && playlists.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
-          <div className="text-4xl mb-2">📊</div>
+          <BarChart3 className="h-10 w-10 mx-auto mb-2" />
           <p>No chart data available</p>
         </div>
       )}

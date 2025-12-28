@@ -10,6 +10,7 @@ import {
   useRecentlyPlayed,
 } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
+import { Music, Disc3, ListMusic, Mic2, Clock, Lock, Play, Pencil } from "lucide-react";
 
 type LibraryTab = "songs" | "albums" | "playlists" | "artists" | "recent";
 
@@ -82,18 +83,18 @@ export function UserLibrary() {
     }
   };
 
-  const tabs: { tab: LibraryTab; label: string; icon: string }[] = [
-    { tab: "songs", label: "Songs", icon: "🎵" },
-    { tab: "albums", label: "Albums", icon: "💿" },
-    { tab: "playlists", label: "Playlists", icon: "📋" },
-    { tab: "artists", label: "Artists", icon: "🎤" },
-    { tab: "recent", label: "Recent", icon: "🕐" },
+  const tabs: { tab: LibraryTab; label: string; icon: React.ReactNode }[] = [
+    { tab: "songs", label: "Songs", icon: <Music className="h-4 w-4" /> },
+    { tab: "albums", label: "Albums", icon: <Disc3 className="h-4 w-4" /> },
+    { tab: "playlists", label: "Playlists", icon: <ListMusic className="h-4 w-4" /> },
+    { tab: "artists", label: "Artists", icon: <Mic2 className="h-4 w-4" /> },
+    { tab: "recent", label: "Recent", icon: <Clock className="h-4 w-4" /> },
   ];
 
   if (!isAuthorized) {
     return (
       <div className="flex flex-col items-center justify-center py-16 space-y-6">
-        <div className="text-6xl">🔐</div>
+        <Lock className="h-16 w-16 text-muted-foreground" />
         <div className="text-center">
           <h3 className="text-xl font-semibold text-foreground mb-2">
             Authorization Required
@@ -124,7 +125,7 @@ export function UserLibrary() {
             onClick={() => setTab(t)}
             className="rounded-full"
           >
-            <span className="mr-1">{icon}</span>
+            {icon}
             {label}
           </Button>
         ))}
@@ -154,7 +155,7 @@ export function UserLibrary() {
         <div className="space-y-1">
           {songs.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <div className="text-4xl mb-2">🎵</div>
+              <Music className="h-10 w-10 mx-auto mb-2" />
               <p>No songs in your library</p>
             </div>
           ) : (
@@ -167,8 +168,8 @@ export function UserLibrary() {
                 <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
                   {idx + 1}
                 </span>
-                <span className="w-6 text-center hidden group-hover:block text-foreground">
-                  ▶
+                <span className="w-6 text-center hidden group-hover:flex justify-center text-foreground">
+                  <Play className="h-4 w-4" />
                 </span>
                 {song.attributes.artwork ? (
                   <img
@@ -178,7 +179,7 @@ export function UserLibrary() {
                   />
                 ) : (
                   <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
-                    ♫
+                    <Music className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -201,7 +202,7 @@ export function UserLibrary() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {albums.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              <div className="text-4xl mb-2">💿</div>
+              <Disc3 className="h-10 w-10 mx-auto mb-2" />
               <p>No albums in your library</p>
             </div>
           ) : (
@@ -219,12 +220,12 @@ export function UserLibrary() {
                       className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                     />
                   ) : (
-                    <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center text-4xl">
-                      💿
+                    <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
+                      <Disc3 className="h-10 w-10 text-muted-foreground" />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                    <span className="text-white text-3xl">▶</span>
+                    <Play className="h-8 w-8 text-white" />
                   </div>
                 </div>
                 <p className="font-medium text-foreground text-sm truncate">{album.attributes.name}</p>
@@ -240,7 +241,7 @@ export function UserLibrary() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {playlists.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              <div className="text-4xl mb-2">📋</div>
+              <ListMusic className="h-10 w-10 mx-auto mb-2" />
               <p>No playlists in your library</p>
             </div>
           ) : (
@@ -258,16 +259,16 @@ export function UserLibrary() {
                       className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                     />
                   ) : (
-                    <div className="w-full h-full rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-4xl">
-                      📋
+                    <div className="w-full h-full rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
+                      <ListMusic className="h-10 w-10 text-white" />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                    <span className="text-white text-3xl">▶</span>
+                    <Play className="h-8 w-8 text-white" />
                   </div>
                   {playlist.attributes.canEdit && (
-                    <span className="absolute top-2 right-2 text-xs bg-background/80 px-2 py-0.5 rounded">
-                      ✏️
+                    <span className="absolute top-2 right-2 bg-background/80 p-1 rounded">
+                      <Pencil className="h-3 w-3" />
                     </span>
                   )}
                 </div>
@@ -283,14 +284,14 @@ export function UserLibrary() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {artists.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              <div className="text-4xl mb-2">🎤</div>
+              <Mic2 className="h-10 w-10 mx-auto mb-2" />
               <p>No artists in your library</p>
             </div>
           ) : (
             artists.map((artist) => (
               <div key={artist.id} className="text-center">
-                <div className="w-24 h-24 mx-auto rounded-full bg-secondary flex items-center justify-center text-3xl mb-2">
-                  🎤
+                <div className="w-24 h-24 mx-auto rounded-full bg-secondary flex items-center justify-center mb-2">
+                  <Mic2 className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <p className="font-medium text-foreground text-sm truncate">{artist.attributes.name}</p>
               </div>
@@ -304,7 +305,7 @@ export function UserLibrary() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {recentlyPlayed.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              <div className="text-4xl mb-2">🕐</div>
+              <Clock className="h-10 w-10 mx-auto mb-2" />
               <p>No recently played items</p>
             </div>
           ) : (
@@ -318,12 +319,12 @@ export function UserLibrary() {
                       className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                     />
                   ) : (
-                    <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center text-4xl">
-                      🎵
+                    <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
+                      <Music className="h-10 w-10 text-muted-foreground" />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                    <span className="text-white text-3xl">▶</span>
+                    <Play className="h-8 w-8 text-white" />
                   </div>
                   <span className="absolute bottom-2 left-2 text-xs bg-background/80 px-2 py-0.5 rounded capitalize">
                     {item.type.replace("s", "")}

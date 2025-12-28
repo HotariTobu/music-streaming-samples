@@ -1,13 +1,14 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
+import { Sun, Moon, Monitor } from "lucide-react";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
-  const options: { value: "light" | "dark" | "system"; icon: string }[] = [
-    { value: "light", icon: "☀️" },
-    { value: "dark", icon: "🌙" },
-    { value: "system", icon: "💻" },
+  const options: { value: "light" | "dark" | "system"; icon: React.ReactNode }[] = [
+    { value: "light", icon: <Sun className="h-4 w-4" /> },
+    { value: "dark", icon: <Moon className="h-4 w-4" /> },
+    { value: "system", icon: <Monitor className="h-4 w-4" /> },
   ];
 
   return (

@@ -10,6 +10,7 @@ import { UserLibrary } from "./components/UserLibrary";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { MusicKitProvider, useMusicKit } from "./contexts/MusicKitContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { Music, Search, BarChart3, Library, Headphones, Lock, AlertTriangle } from "lucide-react";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -36,7 +37,7 @@ function AppContent() {
             <ThemeToggle />
           </div>
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4">🎵</div>
+            <Music className="h-16 w-16 mx-auto mb-4 text-primary" />
             <h1 className="text-3xl font-bold text-foreground mb-2">Apple Music API</h1>
             <p className="text-muted-foreground">Enter your Apple Developer credentials to get started</p>
           </div>
@@ -52,7 +53,7 @@ function AppContent() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="bg-destructive/10 border-destructive/20 max-w-md text-center">
           <CardContent className="pt-6">
-            <div className="text-5xl mb-4">⚠️</div>
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive" />
             <h2 className="text-xl font-bold text-destructive mb-2">Error</h2>
             <p className="text-muted-foreground">{error}</p>
           </CardContent>
@@ -73,11 +74,11 @@ function AppContent() {
     );
   }
 
-  const tabs: { id: Tab; label: string; icon: string; requiresAuth?: boolean }[] = [
-    { id: "search", label: "Search", icon: "🔍" },
-    { id: "charts", label: "Charts", icon: "📊" },
-    { id: "library", label: "Library", icon: "📚", requiresAuth: true },
-    { id: "playback", label: "Player", icon: "🎧" },
+  const tabs: { id: Tab; label: string; icon: React.ReactNode; requiresAuth?: boolean }[] = [
+    { id: "search", label: "Search", icon: <Search className="h-4 w-4" /> },
+    { id: "charts", label: "Charts", icon: <BarChart3 className="h-4 w-4" /> },
+    { id: "library", label: "Library", icon: <Library className="h-4 w-4" />, requiresAuth: true },
+    { id: "playback", label: "Player", icon: <Headphones className="h-4 w-4" /> },
   ];
 
   return (
@@ -87,7 +88,7 @@ function AppContent() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🎵</span>
+              <Music className="h-6 w-6 text-primary" />
               <div>
                 <h1 className="font-bold text-lg">Apple Music API</h1>
                 <p className="text-xs text-muted-foreground">MusicKit JS Sample</p>
@@ -131,7 +132,7 @@ function AppContent() {
                 <span>{icon}</span>
                 {label}
                 {requiresAuth && !isAuthorized && (
-                  <span className="text-xs text-amber-500">🔒</span>
+                  <Lock className="h-3 w-3 text-amber-500" />
                 )}
               </Button>
             ))}

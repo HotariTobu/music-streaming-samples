@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Music } from "lucide-react";
 
 export function PlaybackControls() {
   const { musicKit, isAuthorized } = useMusicKit();
@@ -89,8 +89,8 @@ export function PlaybackControls() {
                   className="w-40 h-40 rounded-xl shadow-2xl"
                 />
               ) : (
-                <div className="w-40 h-40 rounded-xl bg-secondary flex items-center justify-center text-5xl">
-                  ♫
+                <div className="w-40 h-40 rounded-xl bg-secondary flex items-center justify-center">
+                  <Music className="h-12 w-12 text-muted-foreground" />
                 </div>
               )}
             </div>
@@ -160,7 +160,7 @@ export function PlaybackControls() {
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            <div className="text-5xl mb-2">🎵</div>
+            <Music className="h-12 w-12 mx-auto mb-2" />
             <p>No track playing</p>
             <p className="text-sm mt-1">Search for music and start playing</p>
           </div>
@@ -227,10 +227,10 @@ export function PlaybackControls() {
                 `}
               >
                 <span className={`
-                  w-6 text-center text-sm
+                  w-6 flex justify-center text-sm
                   ${idx === queuePosition ? "text-primary" : "text-muted-foreground"}
                 `}>
-                  {idx === queuePosition ? "▶" : idx + 1}
+                  {idx === queuePosition ? <Play className="h-3 w-3" /> : idx + 1}
                 </span>
                 {item.attributes.artwork ? (
                   <img
@@ -239,8 +239,8 @@ export function PlaybackControls() {
                     className="w-10 h-10 rounded"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded bg-secondary flex items-center justify-center text-sm">
-                    ♫
+                  <div className="w-10 h-10 rounded bg-secondary flex items-center justify-center">
+                    <Music className="h-4 w-4 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">

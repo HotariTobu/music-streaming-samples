@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useCatalogSearch } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
+import { Music, Disc3, Mic2, ListMusic, Search, Play } from "lucide-react";
 
 type SearchType = "songs" | "albums" | "artists" | "playlists";
 
@@ -66,11 +67,11 @@ export function CatalogSearch() {
     }
   };
 
-  const searchTypes: { type: SearchType; label: string; icon: string }[] = [
-    { type: "songs", label: "Songs", icon: "♫" },
-    { type: "albums", label: "Albums", icon: "💿" },
-    { type: "artists", label: "Artists", icon: "🎤" },
-    { type: "playlists", label: "Playlists", icon: "📋" },
+  const searchTypes: { type: SearchType; label: string; icon: React.ReactNode }[] = [
+    { type: "songs", label: "Songs", icon: <Music className="h-4 w-4" /> },
+    { type: "albums", label: "Albums", icon: <Disc3 className="h-4 w-4" /> },
+    { type: "artists", label: "Artists", icon: <Mic2 className="h-4 w-4" /> },
+    { type: "playlists", label: "Playlists", icon: <ListMusic className="h-4 w-4" /> },
   ];
 
   return (
@@ -78,9 +79,7 @@ export function CatalogSearch() {
       {/* Search Input */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-            🔍
-          </span>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search Apple Music catalog..."
             value={inputQuery}
@@ -107,7 +106,7 @@ export function CatalogSearch() {
             onClick={() => handleTypeChange(t)}
             className="rounded-full"
           >
-            <span className="mr-1">{icon}</span>
+            {icon}
             {label}
           </Button>
         ))}
@@ -135,8 +134,8 @@ export function CatalogSearch() {
                 <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
                   {idx + 1}
                 </span>
-                <span className="w-6 text-center hidden group-hover:block text-foreground">
-                  ▶
+                <span className="w-6 text-center hidden group-hover:flex justify-center text-foreground">
+                  <Play className="h-4 w-4" />
                 </span>
                 {song.attributes.artwork ? (
                   <img
@@ -146,7 +145,7 @@ export function CatalogSearch() {
                   />
                 ) : (
                   <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
-                    ♫
+                    <Music className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -178,8 +177,8 @@ export function CatalogSearch() {
                     className="w-16 h-16 rounded shadow-lg"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded bg-secondary flex items-center justify-center text-2xl">
-                    💿
+                  <div className="w-16 h-16 rounded bg-secondary flex items-center justify-center">
+                    <Disc3 className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -192,7 +191,7 @@ export function CatalogSearch() {
                     {album.attributes.releaseDate && ` • ${album.attributes.releaseDate.slice(0, 4)}`}
                   </p>
                 </div>
-                <span className="text-muted-foreground group-hover:text-foreground transition-colors">▶</span>
+                <Play className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
             ))}
 
@@ -209,8 +208,8 @@ export function CatalogSearch() {
                     className="w-16 h-16 rounded-full shadow-lg"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-2xl">
-                    🎤
+                  <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
+                    <Mic2 className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -238,8 +237,8 @@ export function CatalogSearch() {
                     className="w-16 h-16 rounded shadow-lg"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded bg-secondary flex items-center justify-center text-2xl">
-                    📋
+                  <div className="w-16 h-16 rounded bg-secondary flex items-center justify-center">
+                    <ListMusic className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -250,7 +249,7 @@ export function CatalogSearch() {
                     </p>
                   )}
                 </div>
-                <span className="text-muted-foreground group-hover:text-foreground transition-colors">▶</span>
+                <Play className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
             ))}
         </div>
@@ -259,7 +258,7 @@ export function CatalogSearch() {
       {/* Empty State */}
       {!isLoading && results.length === 0 && searchQuery && (
         <div className="text-center py-12 text-muted-foreground">
-          <div className="text-4xl mb-2">🔍</div>
+          <Search className="h-10 w-10 mx-auto mb-2" />
           <p>No results found for "{searchQuery}"</p>
         </div>
       )}
@@ -267,7 +266,7 @@ export function CatalogSearch() {
       {/* Initial State */}
       {!inputQuery && results.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
-          <div className="text-4xl mb-2">🎵</div>
+          <Music className="h-10 w-10 mx-auto mb-2" />
           <p>Search for songs, albums, artists, or playlists</p>
         </div>
       )}
