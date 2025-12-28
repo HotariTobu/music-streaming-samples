@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { CredentialsForm } from "./components/CredentialsForm";
 import { CatalogSearch } from "./components/CatalogSearch";
 import { Charts } from "./components/Charts";
@@ -49,11 +50,13 @@ function AppContent() {
   if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-8 max-w-md text-center">
-          <div className="text-5xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-destructive mb-2">Error</h2>
-          <p className="text-muted-foreground">{error}</p>
-        </div>
+        <Card className="bg-destructive/10 border-destructive/20 max-w-md text-center">
+          <CardContent className="pt-6">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h2 className="text-xl font-bold text-destructive mb-2">Error</h2>
+            <p className="text-muted-foreground">{error}</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -119,23 +122,18 @@ function AppContent() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex gap-1 py-2 overflow-x-auto">
             {tabs.map(({ id, label, icon, requiresAuth }) => (
-              <button
+              <Button
                 key={id}
+                variant={activeTab === id ? "secondary" : "ghost"}
                 onClick={() => setActiveTab(id)}
-                className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
-                  ${activeTab === id
-                    ? "bg-secondary text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                  }
-                `}
+                className="whitespace-nowrap"
               >
                 <span>{icon}</span>
                 {label}
                 {requiresAuth && !isAuthorized && (
                   <span className="text-xs text-amber-500">🔒</span>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -144,25 +142,27 @@ function AppContent() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-6">
         {/* API Features Info */}
-        <div className="mb-6 p-4 bg-card rounded-xl border border-border">
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-foreground">Public API (No Auth)</span>
-              <span className="text-muted-foreground">Search, Charts</span>
+        <Card className="mb-6">
+          <CardContent className="py-4">
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="text-foreground">Public API (No Auth)</span>
+                <span className="text-muted-foreground">Search, Charts</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span className="text-foreground">User API (Auth Required)</span>
+                <span className="text-muted-foreground">Library, Playlists, Recent</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-pink-500" />
+                <span className="text-foreground">Playback</span>
+                <span className="text-muted-foreground">Preview (30s) or Full (with subscription)</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-foreground">User API (Auth Required)</span>
-              <span className="text-muted-foreground">Library, Playlists, Recent</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-pink-500" />
-              <span className="text-foreground">Playback</span>
-              <span className="text-muted-foreground">Preview (30s) or Full (with subscription)</span>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Tab Content */}
         {activeTab === "search" && <CatalogSearch />}

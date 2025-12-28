@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useCharts } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
@@ -61,15 +63,14 @@ export function Charts() {
 
   if (error) {
     return (
-      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-        {error instanceof Error ? error.message : "Failed to load charts"}
-        <button
-          onClick={() => refetch()}
-          className="ml-4 underline hover:no-underline"
-        >
-          Retry
-        </button>
-      </div>
+      <Alert variant="destructive">
+        <AlertDescription>
+          {error instanceof Error ? error.message : "Failed to load charts"}
+          <Button variant="link" onClick={() => refetch()} className="ml-2 h-auto p-0">
+            Retry
+          </Button>
+        </AlertDescription>
+      </Alert>
     );
   }
 
@@ -78,20 +79,15 @@ export function Charts() {
       {/* Type Selector */}
       <div className="flex gap-2">
         {chartTypes.map(({ type: t, label, icon }) => (
-          <button
+          <Button
             key={t}
+            variant={type === t ? "default" : "secondary"}
             onClick={() => setType(t)}
-            className={`
-              px-4 py-2 rounded-full text-sm font-medium transition-all
-              ${type === t
-                ? "bg-foreground text-background"
-                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
-              }
-            `}
+            className="rounded-full"
           >
             <span className="mr-1">{icon}</span>
             {label}
-          </button>
+          </Button>
         ))}
       </div>
 

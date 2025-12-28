@@ -1,4 +1,5 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -12,20 +13,16 @@ export function ThemeToggle() {
   return (
     <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary">
       {options.map(({ value, icon }) => (
-        <button
+        <Button
           key={value}
+          variant="ghost"
+          size="icon-sm"
           onClick={() => setTheme(value)}
-          className={`
-            w-8 h-8 rounded-md text-sm transition-all
-            ${theme === value
-              ? "bg-background shadow-sm"
-              : "hover:bg-background/50"
-            }
-          `}
+          className={theme === value ? "bg-background shadow-sm" : ""}
           title={value.charAt(0).toUpperCase() + value.slice(1)}
         >
           {icon}
-        </button>
+        </Button>
       ))}
     </div>
   );

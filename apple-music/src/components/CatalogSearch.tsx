@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useCatalogSearch } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
@@ -100,28 +101,25 @@ export function CatalogSearch() {
       {/* Type Selector */}
       <div className="flex gap-2">
         {searchTypes.map(({ type: t, label, icon }) => (
-          <button
+          <Button
             key={t}
+            variant={type === t ? "default" : "secondary"}
             onClick={() => handleTypeChange(t)}
-            className={`
-              px-4 py-2 rounded-full text-sm font-medium transition-all
-              ${type === t
-                ? "bg-foreground text-background"
-                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
-              }
-            `}
+            className="rounded-full"
           >
             <span className="mr-1">{icon}</span>
             {label}
-          </button>
+          </Button>
         ))}
       </div>
 
       {/* Error */}
       {error && (
-        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-          {error instanceof Error ? error.message : "Search failed"}
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>
+            {error instanceof Error ? error.message : "Search failed"}
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Results */}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import {
   useLibrarySongs,
@@ -117,20 +118,15 @@ export function UserLibrary() {
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
         {tabs.map(({ tab: t, label, icon }) => (
-          <button
+          <Button
             key={t}
+            variant={tab === t ? "default" : "secondary"}
             onClick={() => setTab(t)}
-            className={`
-              px-4 py-2 rounded-full text-sm font-medium transition-all
-              ${tab === t
-                ? "bg-foreground text-background"
-                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
-              }
-            `}
+            className="rounded-full"
           >
             <span className="mr-1">{icon}</span>
             {label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -143,15 +139,14 @@ export function UserLibrary() {
 
       {/* Error */}
       {error && (
-        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-          {error instanceof Error ? error.message : "Failed to load library"}
-          <button
-            onClick={refetch}
-            className="ml-4 underline hover:no-underline"
-          >
-            Retry
-          </button>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>
+            {error instanceof Error ? error.message : "Failed to load library"}
+            <Button variant="link" onClick={refetch} className="ml-2 h-auto p-0">
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Library Songs */}

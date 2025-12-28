@@ -2,6 +2,10 @@ import { useCallback, useRef } from "react";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useMusicKitEvents } from "@/hooks/useMusicKitEvents";
 import { formatDuration, getArtworkUrl, getPlaybackStateLabel } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Slider } from "@/components/ui/slider";
 
 export function PlaybackControls() {
   const { musicKit, isAuthorized } = useMusicKit();
@@ -47,10 +51,9 @@ export function PlaybackControls() {
   );
 
   const handleVolumeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (values: number[]) => {
       if (!musicKit) return;
-      const newVolume = parseFloat(e.target.value);
-      musicKit.volume = newVolume;
+      musicKit.volume = values[0];
     },
     [musicKit]
   );
@@ -69,9 +72,11 @@ export function PlaybackControls() {
   return (
     <div className="space-y-6">
       {/* Now Playing */}
-      <div className="bg-card rounded-2xl p-6 border border-border">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Now Playing</h3>
-
+      <Card>
+        <CardHeader>
+          <CardTitle>Now Playing</CardTitle>
+        </CardHeader>
+        <CardContent>
         {nowPlaying ? (
           <div className="flex gap-6">
             {/* Artwork */}
@@ -125,24 +130,28 @@ export function PlaybackControls() {
 
               {/* Playback Controls */}
               <div className="flex items-center justify-center gap-6">
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={skipPrevious}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-2xl"
+                  className="text-2xl"
                 >
                   ⏮
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={togglePlayPause}
-                  className="w-14 h-14 rounded-full bg-foreground text-background flex items-center justify-center text-2xl hover:scale-105 transition-transform"
+                  className="w-14 h-14 rounded-full bg-foreground text-background text-2xl hover:scale-105 transition-transform"
                 >
                   {isPlaying ? "⏸" : "▶"}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={skipNext}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-2xl"
+                  className="text-2xl"
                 >
                   ⏭
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -153,49 +162,54 @@ export function PlaybackControls() {
             <p className="text-sm mt-1">Search for music and start playing</p>
           </div>
         )}
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Volume & State */}
       <div className="grid grid-cols-2 gap-4">
         {/* Volume */}
-        <div className="bg-card border border-border rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <span className="text-muted-foreground">🔊</span>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={handleVolumeChange}
-              className="flex-1 accent-primary"
-            />
-            <span className="text-muted-foreground text-sm w-10">
-              {Math.round(volume * 100)}%
-            </span>
-          </div>
-        </div>
+        <Card className="py-4">
+          <CardContent className="py-0">
+            <div className="flex items-center gap-3">
+              <span className="text-muted-foreground">🔊</span>
+              <Slider
+                value={[volume ?? 1]}
+                onValueChange={handleVolumeChange}
+                min={0}
+                max={1}
+                step={0.01}
+                className="flex-1"
+              />
+              <span className="text-muted-foreground text-sm w-10">
+                {Math.round((volume ?? 1) * 100)}%
+              </span>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Playback State */}
-        <div className="bg-card border border-border rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <span className={`
-              w-3 h-3 rounded-full
-              ${isPlaying ? "bg-green-500 animate-pulse" : "bg-muted-foreground"}
-            `} />
-            <span className="text-muted-foreground">
-              State: <span className="text-foreground">{getPlaybackStateLabel(playbackState)}</span>
-            </span>
-          </div>
-        </div>
+        <Card className="py-4">
+          <CardContent className="py-0">
+            <div className="flex items-center gap-3">
+              <span className={`
+                w-3 h-3 rounded-full
+                ${isPlaying ? "bg-green-500 animate-pulse" : "bg-muted-foreground"}
+              `} />
+              <span className="text-muted-foreground">
+                State: <span className="text-foreground">{getPlaybackStateLabel(playbackState)}</span>
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Queue */}
       {queue.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-4">
-          <h3 className="text-lg font-semibold text-foreground mb-3">
-            Queue ({queue.length} tracks)
-          </h3>
+        <Card>
+          <CardHeader>
+            <CardTitle>Queue ({queue.length} tracks)</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="max-h-64 overflow-y-auto space-y-1">
             {queue.map((item, idx) => (
               <div
@@ -240,15 +254,18 @@ export function PlaybackControls() {
               </div>
             ))}
           </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Authorization Notice */}
       {!isAuthorized && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-amber-600 dark:text-amber-400 text-sm">
-          <strong>Note:</strong> Full playback requires Apple Music subscription.
-          Without authorization, only 30-second previews are available.
-        </div>
+        <Alert className="bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400">
+          <AlertDescription>
+            <strong>Note:</strong> Full playback requires Apple Music subscription.
+            Without authorization, only 30-second previews are available.
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );

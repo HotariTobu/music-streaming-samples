@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,15 +54,15 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-foreground mb-2">Developer Credentials</h2>
-        <p className="text-sm text-muted-foreground">
+    <Card>
+      <CardHeader>
+        <CardTitle>Developer Credentials</CardTitle>
+        <CardDescription>
           Enter your Apple Developer credentials to access the Apple Music API.
           Credentials are stored in-memory only.
-        </p>
-      </div>
-
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor="teamId">Team ID</Label>
@@ -109,9 +111,9 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
         </div>
 
         {submitError && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-            {submitError}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
         )}
 
         <Button
@@ -143,6 +145,7 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
           </a>
         </p>
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
