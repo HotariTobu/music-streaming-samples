@@ -9,6 +9,7 @@ import { z } from "zod";
 import { RootLayout } from "./layouts/RootLayout";
 import { SearchLayout } from "./layouts/SearchLayout";
 import { ChartsLayout } from "./layouts/ChartsLayout";
+import { LibraryLayout } from "./layouts/LibraryLayout";
 import { CatalogSearchSongs } from "./components/CatalogSearchSongs";
 import { CatalogSearchAlbums } from "./components/CatalogSearchAlbums";
 import { CatalogSearchArtists } from "./components/CatalogSearchArtists";
@@ -16,7 +17,11 @@ import { CatalogSearchPlaylists } from "./components/CatalogSearchPlaylists";
 import { SongsChart } from "./components/SongsChart";
 import { AlbumsChart } from "./components/AlbumsChart";
 import { PlaylistsChart } from "./components/PlaylistsChart";
-import { UserLibrary } from "./components/UserLibrary";
+import { LibrarySongs } from "./components/LibrarySongs";
+import { LibraryAlbums } from "./components/LibraryAlbums";
+import { LibraryPlaylists } from "./components/LibraryPlaylists";
+import { LibraryArtists } from "./components/LibraryArtists";
+import { LibraryRecent } from "./components/LibraryRecent";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { CatalogAlbumDetailPage } from "./components/CatalogAlbumDetailPage";
 import { LibraryAlbumDetailPage } from "./components/LibraryAlbumDetailPage";
@@ -26,10 +31,6 @@ import { LibraryPlaylistDetailPage } from "./components/LibraryPlaylistDetailPag
 // Search params schemas
 const searchQuerySchema = z.object({
   q: z.string().optional(),
-});
-
-const libraryTabSchema = z.object({
-  tab: z.enum(["songs", "albums", "playlists", "artists", "recent"]).default("songs"),
 });
 
 // Root route with layout
@@ -79,7 +80,6 @@ const searchPlaylistsRoute = createRoute({
   component: CatalogSearchPlaylists,
 });
 
-// Search album detail route
 const searchAlbumDetailRoute = createRoute({
   getParentRoute: () => searchRoute,
   path: "/albums/$albumId",
@@ -92,7 +92,6 @@ const searchAlbumDetailRoute = createRoute({
   },
 });
 
-// Search playlist detail route
 const searchPlaylistDetailRoute = createRoute({
   getParentRoute: () => searchRoute,
   path: "/playlists/$playlistId",
@@ -112,7 +111,6 @@ const chartsRoute = createRoute({
   component: ChartsLayout,
 });
 
-// Charts child routes
 const chartsSongsRoute = createRoute({
   getParentRoute: () => chartsRoute,
   path: "/songs",
@@ -131,7 +129,6 @@ const chartsPlaylistsRoute = createRoute({
   component: PlaylistsChart,
 });
 
-// Charts album detail route
 const chartsAlbumDetailRoute = createRoute({
   getParentRoute: () => chartsRoute,
   path: "/albums/$albumId",
@@ -141,7 +138,6 @@ const chartsAlbumDetailRoute = createRoute({
   },
 });
 
-// Charts playlist detail route
 const chartsPlaylistDetailRoute = createRoute({
   getParentRoute: () => chartsRoute,
   path: "/playlists/$playlistId",
@@ -151,48 +147,76 @@ const chartsPlaylistDetailRoute = createRoute({
   },
 });
 
-// Library route
+// Library layout route
 const libraryRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/library",
-  component: UserLibrary,
-  validateSearch: libraryTabSchema,
+  component: LibraryLayout,
 });
 
-// Library detail routes
-const recentAlbumDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/library/recent/albums/$albumId",
-  component: function RecentAlbumRoute() {
-    const { albumId } = getRouteApi("/library/recent/albums/$albumId").useParams();
-    return <CatalogAlbumDetailPage albumId={albumId} backTo="/library?tab=recent" />;
-  },
+const librarySongsRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/songs",
+  component: LibrarySongs,
 });
 
-const recentPlaylistDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/library/recent/playlists/$playlistId",
-  component: function RecentPlaylistRoute() {
-    const { playlistId } = getRouteApi("/library/recent/playlists/$playlistId").useParams();
-    return <CatalogPlaylistDetailPage playlistId={playlistId} backTo="/library?tab=recent" />;
-  },
+const libraryAlbumsRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/albums",
+  component: LibraryAlbums,
+});
+
+const libraryPlaylistsRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/playlists",
+  component: LibraryPlaylists,
+});
+
+const libraryArtistsRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/artists",
+  component: LibraryArtists,
+});
+
+const libraryRecentRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/recent",
+  component: LibraryRecent,
 });
 
 const libraryAlbumDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/library/albums/$albumId",
+  getParentRoute: () => libraryRoute,
+  path: "/albums/$albumId",
   component: function LibraryAlbumRoute() {
     const { albumId } = getRouteApi("/library/albums/$albumId").useParams();
-    return <LibraryAlbumDetailPage albumId={albumId} backTo="/library?tab=albums" />;
+    return <LibraryAlbumDetailPage albumId={albumId} backTo="/library/albums" />;
   },
 });
 
 const libraryPlaylistDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/library/playlists/$playlistId",
+  getParentRoute: () => libraryRoute,
+  path: "/playlists/$playlistId",
   component: function LibraryPlaylistRoute() {
     const { playlistId } = getRouteApi("/library/playlists/$playlistId").useParams();
-    return <LibraryPlaylistDetailPage playlistId={playlistId} backTo="/library?tab=playlists" />;
+    return <LibraryPlaylistDetailPage playlistId={playlistId} backTo="/library/playlists" />;
+  },
+});
+
+const recentAlbumDetailRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/recent/albums/$albumId",
+  component: function RecentAlbumRoute() {
+    const { albumId } = getRouteApi("/library/recent/albums/$albumId").useParams();
+    return <CatalogAlbumDetailPage albumId={albumId} backTo="/library/recent" />;
+  },
+});
+
+const recentPlaylistDetailRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/recent/playlists/$playlistId",
+  component: function RecentPlaylistRoute() {
+    const { playlistId } = getRouteApi("/library/recent/playlists/$playlistId").useParams();
+    return <CatalogPlaylistDetailPage playlistId={playlistId} backTo="/library/recent" />;
   },
 });
 
@@ -221,11 +245,17 @@ const routeTree = rootRoute.addChildren([
     chartsAlbumDetailRoute,
     chartsPlaylistDetailRoute,
   ]),
-  libraryRoute,
-  recentAlbumDetailRoute,
-  recentPlaylistDetailRoute,
-  libraryAlbumDetailRoute,
-  libraryPlaylistDetailRoute,
+  libraryRoute.addChildren([
+    librarySongsRoute,
+    libraryAlbumsRoute,
+    libraryPlaylistsRoute,
+    libraryArtistsRoute,
+    libraryRecentRoute,
+    libraryAlbumDetailRoute,
+    libraryPlaylistDetailRoute,
+    recentAlbumDetailRoute,
+    recentPlaylistDetailRoute,
+  ]),
   playerRoute,
 ]);
 
