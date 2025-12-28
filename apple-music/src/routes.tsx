@@ -9,7 +9,7 @@ import { CatalogSearch } from "./components/CatalogSearch";
 import { Charts } from "./components/Charts";
 import { UserLibrary } from "./components/UserLibrary";
 import { PlaybackControls } from "./components/PlaybackControls";
-import { PlaylistDetailPage } from "./components/PlaylistDetailPage";
+import { LibraryPlaylistDetailPage } from "./components/LibraryPlaylistDetailPage";
 import { CatalogPlaylistDetailPage } from "./components/CatalogPlaylistDetailPage";
 import { LibraryAlbumDetailPage } from "./components/LibraryAlbumDetailPage";
 import { CatalogAlbumDetailPage } from "./components/CatalogAlbumDetailPage";
@@ -62,7 +62,7 @@ const libraryRoute = createRoute({
 const playlistDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/library/playlists/$playlistId",
-  component: PlaylistDetailPage,
+  component: LibraryPlaylistDetailPage,
 });
 
 const catalogPlaylistDetailRoute = createRoute({

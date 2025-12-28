@@ -153,39 +153,57 @@ export const StorefrontSchema = z.object({
   attributes: StorefrontAttributesSchema,
 });
 
-// ===== Full Resource Schemas (with relationships using z.lazy) =====
+// ===== Resource Reference Schema (for relationships) =====
+const ResourceRefSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  href: z.string().optional(),
+});
 
-export const SongSchema: z.ZodType<Song> = BaseSongSchema.extend({
+// ===== Relationship wrapper with href =====
+const RelationshipSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.object({
+    href: z.string().optional(),
+    data: z.array(itemSchema),
+  });
+
+// ===== Full Resource Schemas (with relationships) =====
+
+export const SongSchema = BaseSongSchema.extend({
+  href: z.string().optional(),
   relationships: z
     .object({
-      albums: z.object({ data: z.lazy(() => z.array(AlbumSchema)) }).optional(),
-      artists: z.object({ data: z.lazy(() => z.array(ArtistSchema)) }).optional(),
+      albums: RelationshipSchema(ResourceRefSchema).optional(),
+      artists: RelationshipSchema(ResourceRefSchema).optional(),
     })
     .optional(),
 });
 
-export const AlbumSchema: z.ZodType<Album> = BaseAlbumSchema.extend({
+export const AlbumSchema = BaseAlbumSchema.extend({
+  href: z.string().optional(),
   relationships: z
     .object({
-      tracks: z.object({ data: z.lazy(() => z.array(SongSchema)) }).optional(),
-      artists: z.object({ data: z.lazy(() => z.array(ArtistSchema)) }).optional(),
+      tracks: RelationshipSchema(SongSchema.or(ResourceRefSchema)).optional(),
+      artists: RelationshipSchema(ResourceRefSchema).optional(),
     })
     .optional(),
 });
 
-export const ArtistSchema: z.ZodType<Artist> = BaseArtistSchema.extend({
+export const ArtistSchema = BaseArtistSchema.extend({
+  href: z.string().optional(),
   relationships: z
     .object({
-      albums: z.object({ data: z.lazy(() => z.array(AlbumSchema)) }).optional(),
+      albums: RelationshipSchema(ResourceRefSchema).optional(),
     })
     .optional(),
 });
 
-export const PlaylistSchema: z.ZodType<Playlist> = BasePlaylistSchema.extend({
+export const PlaylistSchema = BasePlaylistSchema.extend({
+  href: z.string().optional(),
   relationships: z
     .object({
-      tracks: z.object({ data: z.lazy(() => z.array(SongSchema)) }).optional(),
-      curator: z.object({ data: z.array(CuratorSchema) }).optional(),
+      tracks: RelationshipSchema(SongSchema.or(ResourceRefSchema)).optional(),
+      curator: RelationshipSchema(CuratorSchema.or(ResourceRefSchema)).optional(),
     })
     .optional(),
 });
@@ -202,42 +220,7 @@ export type Station = z.infer<typeof StationSchema>;
 export type Genre = z.infer<typeof GenreSchema>;
 export type Storefront = z.infer<typeof StorefrontSchema>;
 
-// Explicit types for circular references
-export type Song = {
-  id: string;
-  type: "songs";
-  attributes: SongAttributes;
-  relationships?: {
-    albums?: { data: Album[] };
-    artists?: { data: Artist[] };
-  };
-};
-
-export type Album = {
-  id: string;
-  type: "albums";
-  attributes: AlbumAttributes;
-  relationships?: {
-    tracks?: { data: Song[] };
-    artists?: { data: Artist[] };
-  };
-};
-
-export type Artist = {
-  id: string;
-  type: "artists";
-  attributes: ArtistAttributes;
-  relationships?: {
-    albums?: { data: Album[] };
-  };
-};
-
-export type Playlist = {
-  id: string;
-  type: "playlists";
-  attributes: PlaylistAttributes;
-  relationships?: {
-    tracks?: { data: Song[] };
-    curator?: { data: Curator[] };
-  };
-};
+export type Song = z.infer<typeof SongSchema>;
+export type Album = z.infer<typeof AlbumSchema>;
+export type Artist = z.infer<typeof ArtistSchema>;
+export type Playlist = z.infer<typeof PlaylistSchema>;

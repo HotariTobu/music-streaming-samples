@@ -186,6 +186,18 @@ export function MusicKitProvider({ children }: { children: ReactNode }) {
       await musicKit.authorize();
       setIsAuthorized(true);
     } catch (err) {
+      // Check if this is a user cancellation (not a real error)
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      const isCancellation = errorMessage.includes("AUTHORIZATION_ERROR") ||
+                             errorMessage.includes("Unauthorized") ||
+                             errorMessage.includes("cancelled") ||
+                             errorMessage.includes("canceled");
+
+      if (isCancellation) {
+        console.log("[MusicKit] Authorization cancelled by user");
+        return; // Don't throw - user cancelled intentionally
+      }
+
       console.error("[MusicKit] Authorization failed:", err);
       throw err;
     }

@@ -1,13 +1,12 @@
 import { useMemo, useCallback } from "react";
-import { usePlayPlaylist } from "@/hooks/usePlayPlaylist";
+import { Link } from "@tanstack/react-router";
 import { useChartsInfinite } from "@/hooks/useChartsInfinite";
 import { getArtworkUrl } from "@/lib/utils";
 import type { Playlist } from "@/schemas";
-import { ListMusic, Play } from "lucide-react";
+import { ListMusic } from "lucide-react";
 import { VirtualGrid } from "./VirtualGrid";
 
 export function PlaylistsChart() {
-  const playPlaylist = usePlayPlaylist();
   const query = useChartsInfinite("playlists");
 
   const playlists = useMemo(
@@ -15,16 +14,13 @@ export function PlaylistsChart() {
     [query.data]
   );
 
-  const handlePlayPlaylist = (playlist: Playlist) => {
-    playPlaylist(playlist.id);
-  };
-
   const renderPlaylist = useCallback(
     (playlist: Playlist, idx: number) => (
-      <div
+      <Link
         key={playlist.id}
-        onClick={() => handlePlayPlaylist(playlist)}
-        className="group cursor-pointer"
+        to="/playlists/$playlistId"
+        params={{ playlistId: playlist.id }}
+        className="group cursor-pointer block"
       >
         <div className="relative aspect-square mb-2">
           <span className={`
@@ -44,17 +40,14 @@ export function PlaylistsChart() {
               <ListMusic className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-            <Play className="h-8 w-8 text-white" />
-          </div>
         </div>
         <p className="font-medium text-foreground text-sm truncate">{playlist.attributes.name}</p>
         {playlist.attributes.curatorName && (
           <p className="text-xs text-muted-foreground truncate">{playlist.attributes.curatorName}</p>
         )}
-      </div>
+      </Link>
     ),
-    [handlePlayPlaylist]
+    []
   );
 
   if (query.isLoading) {
