@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
@@ -8,15 +8,24 @@ import { Music, Disc3, ListMusic, Play, BarChart3 } from "lucide-react";
 
 type ChartType = "songs" | "albums" | "playlists";
 
+const routeApi = getRouteApi("/charts");
+
 export function Charts() {
   const { musicKit } = useMusicKit();
-  const [type, setType] = useState<ChartType>("songs");
+  const { tab } = routeApi.useSearch();
+  const navigate = routeApi.useNavigate();
+
+  const type = tab;
 
   const { data, isLoading, error, refetch } = useCharts();
 
   const songs = data?.songs ?? [];
   const albums = data?.albums ?? [];
   const playlists = data?.playlists ?? [];
+
+  const handleTypeChange = (newType: ChartType) => {
+    navigate({ search: { tab: newType } });
+  };
 
   const playSong = async (song: MusicKit.Song) => {
     if (!musicKit) return;
@@ -83,8 +92,8 @@ export function Charts() {
           <Button
             key={t}
             variant={type === t ? "default" : "secondary"}
-            onClick={() => setType(t)}
-            className="rounded-full"
+            onClick={() => handleTypeChange(t)}
+            className="rounded-md"
           >
             {icon}
             {label}
@@ -111,10 +120,10 @@ export function Charts() {
                 <img
                   src={getArtworkUrl(song.attributes.artwork, 48)}
                   alt={song.attributes.name}
-                  className="w-12 h-12 rounded shadow-lg"
+                  className="w-12 h-12 rounded-md shadow-lg"
                 />
               ) : (
-                <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
+                <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
                   <Music className="h-5 w-5 text-muted-foreground" />
                 </div>
               )}
