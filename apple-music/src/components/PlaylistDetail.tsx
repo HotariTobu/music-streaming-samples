@@ -118,7 +118,7 @@ export function PlaylistDetail({ playlist, onBack, onDeleted }: PlaylistDetailPr
             <img
               src={getArtworkUrl(playlist.attributes.artwork, 200)}
               alt={playlist.attributes.name}
-              className="w-full h-full object-cover rounded-lg shadow-lg"
+              className="w-full h-full object-cover rounded-lg shadow-md"
             />
           ) : (
             <div className="w-full h-full rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
@@ -247,7 +247,7 @@ export function PlaylistDetail({ playlist, onBack, onDeleted }: PlaylistDetailPr
                 <img
                   src={getArtworkUrl(track.attributes.artwork, 48)}
                   alt={track.attributes.name}
-                  className="w-12 h-12 rounded-md shadow-lg"
+                  className="w-12 h-12 rounded-md"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">

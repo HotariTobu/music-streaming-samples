@@ -170,7 +170,7 @@ export function CatalogSearch() {
                     <img
                       src={getArtworkUrl(song.attributes.artwork, 48)}
                       alt={song.attributes.name}
-                      className="w-12 h-12 rounded-md shadow-lg"
+                      className="w-12 h-12 rounded-md"
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
@@ -230,7 +230,7 @@ export function CatalogSearch() {
                   <img
                     src={getArtworkUrl(album.attributes.artwork, 64)}
                     alt={album.attributes.name}
-                    className="w-16 h-16 rounded-lg shadow-lg"
+                    className="w-16 h-16 rounded-lg shadow-sm"
                   />
                 ) : (
                   <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center">
@@ -261,7 +261,7 @@ export function CatalogSearch() {
                   <img
                     src={getArtworkUrl(artist.attributes.artwork, 64)}
                     alt={artist.attributes.name}
-                    className="w-16 h-16 rounded-full shadow-lg"
+                    className="w-16 h-16 rounded-full shadow-sm"
                   />
                 ) : (
                   <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
@@ -290,7 +290,7 @@ export function CatalogSearch() {
                   <img
                     src={getArtworkUrl(playlist.attributes.artwork, 64)}
                     alt={playlist.attributes.name}
-                    className="w-16 h-16 rounded-lg shadow-lg"
+                    className="w-16 h-16 rounded-lg shadow-sm"
                   />
                 ) : (
                   <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center">

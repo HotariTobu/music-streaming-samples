@@ -178,7 +178,7 @@ export function UserLibrary() {
                   <img
                     src={getArtworkUrl(song.attributes.artwork, 48)}
                     alt={song.attributes.name}
-                    className="w-12 h-12 rounded-md shadow-lg"
+                    className="w-12 h-12 rounded-md"
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
@@ -220,7 +220,7 @@ export function UserLibrary() {
                     <img
                       src={getArtworkUrl(album.attributes.artwork, 200)}
                       alt={album.attributes.name}
-                      className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
+                      className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
                     />
                   ) : (
                     <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
@@ -290,7 +290,7 @@ export function UserLibrary() {
                           <img
                             src={getArtworkUrl(playlist.attributes.artwork, 200)}
                             alt=""
-                            className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
+                            className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
                           />
                         ) : (
                           <span className="w-full h-full rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
@@ -347,7 +347,7 @@ export function UserLibrary() {
                     <img
                       src={getArtworkUrl(item.attributes.artwork, 200)}
                       alt={item.attributes.name}
-                      className="w-full h-full object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
+                      className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
                     />
                   ) : (
                     <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">

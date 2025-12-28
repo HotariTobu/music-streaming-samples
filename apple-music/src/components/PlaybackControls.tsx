@@ -89,7 +89,7 @@ export function PlaybackControls() {
                 <img
                   src={getArtworkUrl(nowPlaying.attributes.artwork, 160)}
                   alt={nowPlaying.attributes.name}
-                  className="w-40 h-40 rounded-xl shadow-2xl"
+                  className="w-40 h-40 rounded-xl shadow-lg"
                 />
               ) : (
                 <div className="w-40 h-40 rounded-xl bg-secondary flex items-center justify-center">
@@ -138,7 +138,7 @@ export function PlaybackControls() {
                   variant="ghost"
                   size="icon"
                   onClick={skipPrevious}
-                  className="h-10 w-10 rounded-full hover:bg-white/20 dark:hover:bg-white/20"
+                  className="h-10 w-10 rounded-full hover:bg-secondary"
                 >
                   <SkipBack className="h-5 w-5" />
                 </Button>
@@ -146,7 +146,7 @@ export function PlaybackControls() {
                   variant="ghost"
                   size="icon"
                   onClick={togglePlayPause}
-                  className="h-10 w-10 rounded-full hover:bg-white/20 dark:hover:bg-white/20"
+                  className="h-10 w-10 rounded-full hover:bg-secondary"
                 >
                   {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
                 </Button>
@@ -154,7 +154,7 @@ export function PlaybackControls() {
                   variant="ghost"
                   size="icon"
                   onClick={skipNext}
-                  className="h-10 w-10 rounded-full hover:bg-white/20 dark:hover:bg-white/20"
+                  className="h-10 w-10 rounded-full hover:bg-secondary"
                 >
                   <SkipForward className="h-5 w-5" />
                 </Button>

@@ -9,6 +9,7 @@ import { CatalogSearch } from "./components/CatalogSearch";
 import { Charts } from "./components/Charts";
 import { UserLibrary } from "./components/UserLibrary";
 import { PlaybackControls } from "./components/PlaybackControls";
+import { PlaylistDetailPage } from "./components/PlaylistDetailPage";
 
 // Search params schemas
 const searchTabSchema = z.object({
