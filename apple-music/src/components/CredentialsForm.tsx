@@ -69,6 +69,7 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
           <Input
             id="teamId"
             placeholder="XXXXXXXXXX"
+            autoComplete="on"
             {...register("teamId")}
           />
           {errors.teamId && (
@@ -84,6 +85,7 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
           <Input
             id="keyId"
             placeholder="XXXXXXXXXX"
+            autoComplete="on"
             {...register("keyId")}
           />
           {errors.keyId && (
