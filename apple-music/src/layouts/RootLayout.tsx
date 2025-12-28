@@ -127,7 +127,10 @@ export function RootLayout() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex gap-1 py-2 overflow-x-auto">
             {navItems.map(({ to, label, icon, requiresAuth }) => {
-              const isActive = location.pathname === to;
+              const isActive =
+                to === "/"
+                  ? location.pathname === "/"
+                  : location.pathname.startsWith(to);
               return (
                 <Button
                   key={to}
