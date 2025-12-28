@@ -142,8 +142,14 @@ function AppContent() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-6">
+        {/* Tab Content */}
+        {activeTab === "search" && <CatalogSearch />}
+        {activeTab === "charts" && <Charts />}
+        {activeTab === "library" && <UserLibrary />}
+        {activeTab === "playback" && <PlaybackControls />}
+
         {/* API Features Info */}
-        <Card className="mb-6">
+        <Card className="mt-6">
           <CardContent className="py-4">
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center gap-2">
@@ -164,12 +170,6 @@ function AppContent() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Tab Content */}
-        {activeTab === "search" && <CatalogSearch />}
-        {activeTab === "charts" && <Charts />}
-        {activeTab === "library" && <UserLibrary />}
-        {activeTab === "playback" && <PlaybackControls />}
       </main>
 
       {/* Footer */}
