@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Slider } from "@/components/ui/slider";
+import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
 
 export function PlaybackControls() {
   const { musicKit, isAuthorized } = useMusicKit();
@@ -129,28 +130,30 @@ export function PlaybackControls() {
               </div>
 
               {/* Playback Controls */}
-              <div className="flex items-center justify-center gap-6">
+              <div className="flex items-center justify-center gap-4">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={skipPrevious}
-                  className="text-2xl"
+                  className="h-10 w-10 rounded-full hover:bg-white/20 dark:hover:bg-white/20"
                 >
-                  ⏮
+                  <SkipBack className="h-5 w-5" />
                 </Button>
                 <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={togglePlayPause}
-                  className="w-14 h-14 rounded-full bg-foreground text-background text-2xl hover:scale-105 transition-transform"
+                  className="h-10 w-10 rounded-full hover:bg-white/20 dark:hover:bg-white/20"
                 >
-                  {isPlaying ? "⏸" : "▶"}
+                  {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={skipNext}
-                  className="text-2xl"
+                  className="h-10 w-10 rounded-full hover:bg-white/20 dark:hover:bg-white/20"
                 >
-                  ⏭
+                  <SkipForward className="h-5 w-5" />
                 </Button>
               </div>
             </div>
@@ -168,10 +171,10 @@ export function PlaybackControls() {
       {/* Volume & State */}
       <div className="grid grid-cols-2 gap-4">
         {/* Volume */}
-        <Card className="py-4">
+        <Card className="justify-center">
           <CardContent className="py-0">
             <div className="flex items-center gap-3">
-              <span className="text-muted-foreground">🔊</span>
+              <Volume2 className="h-4 w-4 text-muted-foreground" />
               <Slider
                 value={[volume ?? 1]}
                 onValueChange={handleVolumeChange}
@@ -188,7 +191,7 @@ export function PlaybackControls() {
         </Card>
 
         {/* Playback State */}
-        <Card className="py-4">
+        <Card className="justify-center">
           <CardContent className="py-0">
             <div className="flex items-center gap-3">
               <span className={`
