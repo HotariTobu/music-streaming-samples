@@ -12,7 +12,7 @@ export function ThemeToggle() {
   ];
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary">
+    <div className="flex items-center gap-1 p-1 rounded-md bg-secondary">
       {options.map(({ value, icon }) => (
         <Button
           key={value}

@@ -239,10 +239,10 @@ export function PlaybackControls() {
                   <img
                     src={getArtworkUrl(item.attributes.artwork, 40)}
                     alt={item.attributes.name}
-                    className="w-10 h-10 rounded"
+                    className="w-10 h-10 rounded-md"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded bg-secondary flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-md bg-secondary flex items-center justify-center">
                     <Music className="h-4 w-4 text-muted-foreground" />
                   </div>
                 )}

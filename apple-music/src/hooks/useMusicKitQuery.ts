@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 
 type SearchType = "songs" | "albums" | "artists" | "playlists";
@@ -173,5 +173,215 @@ export function useRecentlyPlayed(enabled = true) {
       return res.data.data as (MusicKit.Album | MusicKit.Playlist | MusicKit.Station)[];
     },
     enabled: !!musicKit && isAuthorized && enabled,
+  });
+}
+
+/**
+ * Hook for creating a new library playlist
+ */
+export function useCreatePlaylist() {
+  const { musicKit } = useMusicKit();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      name,
+      description,
+      trackIds,
+    }: {
+      name: string;
+      description?: string;
+      trackIds?: string[];
+    }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const body: {
+        attributes: { name: string; description?: string };
+        relationships?: { tracks: { data: { id: string; type: string }[] } };
+      } = {
+        attributes: { name },
+      };
+
+      if (description) {
+        body.attributes.description = description;
+      }
+
+      if (trackIds && trackIds.length > 0) {
+        body.relationships = {
+          tracks: {
+            data: trackIds.map((id) => ({ id, type: "songs" })),
+          },
+        };
+      }
+
+      const res = await musicKit.api.music("/v1/me/library/playlists", {}, {
+        fetchOptions: {
+          method: "POST",
+          body: JSON.stringify(body),
+        },
+      });
+
+      return res.data.data[0] as MusicKit.LibraryPlaylist;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["library", "playlists"] });
+    },
+  });
+}
+
+/**
+ * Hook for updating a playlist's attributes (name, description)
+ */
+export function useUpdatePlaylist() {
+  const { musicKit } = useMusicKit();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      playlistId,
+      name,
+      description,
+    }: {
+      playlistId: string;
+      name?: string;
+      description?: string;
+    }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const body: { attributes: { name?: string; description?: string } } = {
+        attributes: {},
+      };
+
+      if (name !== undefined) {
+        body.attributes.name = name;
+      }
+      if (description !== undefined) {
+        body.attributes.description = description;
+      }
+
+      await musicKit.api.music(`/v1/me/library/playlists/${playlistId}`, {}, {
+        fetchOptions: {
+          method: "PATCH",
+          body: JSON.stringify(body),
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["library", "playlists"] });
+    },
+  });
+}
+
+/**
+ * Hook for adding tracks to an existing playlist
+ */
+export function useAddTracksToPlaylist() {
+  const { musicKit } = useMusicKit();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      playlistId,
+      trackIds,
+    }: {
+      playlistId: string;
+      trackIds: string[];
+    }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const body = {
+        data: trackIds.map((id) => ({ id, type: "songs" })),
+      };
+
+      await musicKit.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {}, {
+        fetchOptions: {
+          method: "POST",
+          body: JSON.stringify(body),
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["library", "playlists"] });
+    },
+  });
+}
+
+/**
+ * Hook for fetching a single playlist with its tracks
+ */
+export function usePlaylistTracks(playlistId: string | null) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useQuery({
+    queryKey: ["library", "playlist", playlistId, "tracks"],
+    queryFn: async () => {
+      if (!musicKit || !playlistId) throw new Error("MusicKit not initialized or no playlist ID");
+
+      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibrarySong>>(
+        `/v1/me/library/playlists/${playlistId}/tracks`,
+        { limit: 100 }
+      );
+      return res.data.data;
+    },
+    enabled: !!musicKit && isAuthorized && !!playlistId,
+  });
+}
+
+/**
+ * Hook for deleting a library playlist
+ */
+export function useDeletePlaylist() {
+  const { musicKit } = useMusicKit();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (playlistId: string) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      await musicKit.api.music(`/v1/me/library/playlists/${playlistId}`, {}, {
+        fetchOptions: {
+          method: "DELETE",
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["library", "playlists"] });
+    },
+  });
+}
+
+/**
+ * Hook for removing tracks from a playlist
+ */
+export function useRemoveTracksFromPlaylist() {
+  const { musicKit } = useMusicKit();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      playlistId,
+      trackIds,
+    }: {
+      playlistId: string;
+      trackIds: string[];
+    }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      // Apple Music API requires sending the track data for deletion
+      const body = {
+        data: trackIds.map((id) => ({ id, type: "songs" })),
+      };
+
+      await musicKit.api.music(`/v1/me/library/playlists/${playlistId}/tracks`, {}, {
+        fetchOptions: {
+          method: "DELETE",
+          body: JSON.stringify(body),
+        },
+      });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["library", "playlists"] });
+      queryClient.invalidateQueries({ queryKey: ["library", "playlist", variables.playlistId, "tracks"] });
+    },
   });
 }
