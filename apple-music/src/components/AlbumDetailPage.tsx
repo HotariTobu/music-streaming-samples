@@ -1,14 +1,17 @@
-import { getRouteApi, Link } from "@tanstack/react-router";
+import { useMemo, useCallback } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import {
   useLibraryAlbum,
   useCatalogAlbum,
-  useLibraryAlbumTracks,
-  useCatalogAlbumTracks,
+  useLibraryAlbumTracksInfinite,
+  useCatalogAlbumTracksInfinite,
 } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
+import type { LibrarySong, Song } from "@/schemas";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Music, Disc, Lock } from "lucide-react";
+import { VirtualList } from "./VirtualList";
 
 const libraryRouteApi = getRouteApi("/library/albums/$albumId");
 const catalogRouteApi = getRouteApi("/albums/$albumId");
@@ -39,18 +42,26 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
     isCatalog ? albumId : undefined
   );
 
-  // Fetch tracks based on source
-  const { data: libraryTracks = [], isLoading: isLoadingLibraryTracks } = useLibraryAlbumTracks(
+  // Fetch tracks with infinite queries based on source
+  const libraryTracksQuery = useLibraryAlbumTracksInfinite(
     source === "library" ? albumId : undefined
   );
-  const { data: catalogTracks = [], isLoading: isLoadingCatalogTracks } = useCatalogAlbumTracks(
+  const catalogTracksQuery = useCatalogAlbumTracksInfinite(
     isCatalog ? albumId : undefined
   );
 
   const album = source === "library" ? libraryAlbum : catalogAlbum;
-  const tracks = source === "library" ? libraryTracks : catalogTracks;
+  const tracksQuery = source === "library" ? libraryTracksQuery : catalogTracksQuery;
   const isLoadingAlbum = source === "library" ? isLoadingLibraryAlbum : isLoadingCatalogAlbum;
-  const isLoadingTracks = source === "library" ? isLoadingLibraryTracks : isLoadingCatalogTracks;
+
+  // Flatten paginated data
+  type TrackType = LibrarySong | Song;
+  const tracks = useMemo((): TrackType[] => {
+    if (!tracksQuery.data) return [];
+    return tracksQuery.data.pages.flatMap(
+      (p) => p.data as TrackType[]
+    );
+  }, [tracksQuery.data]);
 
   const playAlbum = async () => {
     if (!musicKit || !album) return;
@@ -62,15 +73,19 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
     }
   };
 
-  const playSong = async (startIndex: number) => {
-    if (!musicKit || !album) return;
-    try {
-      await musicKit.setQueue({ album: album.id, startWith: startIndex });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[AlbumDetailPage] Play song failed:", err);
-    }
-  };
+  const playSong = useCallback(
+    async (startIndex: number) => {
+      if (!musicKit || !album) return;
+      try {
+        await musicKit.setQueue({ album: album.id });
+        await musicKit.changeToMediaAtIndex(startIndex);
+        await musicKit.play();
+      } catch (err) {
+        console.error("[AlbumDetailPage] Play song failed:", err);
+      }
+    },
+    [musicKit, album]
+  );
 
   const goBack = () => {
     if (source === "library") {
@@ -81,6 +96,36 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
       window.history.back();
     }
   };
+
+  // Render function for virtual list
+  const renderTrack = useCallback(
+    (track: LibrarySong | Song, idx: number) => (
+      <div
+        key={track.id}
+        onClick={() => playSong(idx)}
+        className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
+      >
+        <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
+          {track.attributes.trackNumber || idx + 1}
+        </span>
+        <span className="w-6 text-center hidden group-hover:flex justify-center text-foreground">
+          <Play className="h-4 w-4" />
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-foreground truncate">
+            {track.attributes.name}
+          </p>
+          <p className="text-sm text-muted-foreground truncate">
+            {track.attributes.artistName}
+          </p>
+        </div>
+        <div className="text-sm text-muted-foreground w-12 text-right">
+          {formatDuration(track.attributes.durationInMillis)}
+        </div>
+      </div>
+    ),
+    [playSong]
+  );
 
   // Not authorized (only for library source)
   if (source === "library" && !isAuthorized) {
@@ -188,7 +233,7 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
       </div>
 
       {/* Track list */}
-      {isLoadingTracks ? (
+      {tracksQuery.isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
@@ -198,33 +243,15 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
           <p>No tracks available</p>
         </div>
       ) : (
-        <div className="space-y-1">
-          {tracks.map((track, idx) => (
-            <div
-              key={track.id}
-              onClick={() => playSong(idx)}
-              className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
-            >
-              <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
-                {track.attributes.trackNumber || idx + 1}
-              </span>
-              <span className="w-6 text-center hidden group-hover:flex justify-center text-foreground">
-                <Play className="h-4 w-4" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">
-                  {track.attributes.name}
-                </p>
-                <p className="text-sm text-muted-foreground truncate">
-                  {track.attributes.artistName}
-                </p>
-              </div>
-              <div className="text-sm text-muted-foreground w-12 text-right">
-                {formatDuration(track.attributes.durationInMillis)}
-              </div>
-            </div>
-          ))}
-        </div>
+        <VirtualList
+          items={tracks}
+          hasNextPage={!!tracksQuery.hasNextPage}
+          isFetchingNextPage={tracksQuery.isFetchingNextPage}
+          fetchNextPage={() => tracksQuery.fetchNextPage()}
+          renderItem={renderTrack}
+          estimateSize={64}
+          className="h-[500px]"
+        />
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { Artwork } from "@/schemas";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,7 +13,7 @@ export function formatDuration(ms: number): string {
 }
 
 export function getArtworkUrl(
-  artwork: MusicKit.Artwork | undefined,
+  artwork: Artwork | undefined,
   size = 80
 ): string {
   if (!artwork?.url) return "";

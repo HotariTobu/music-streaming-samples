@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useMusicKitEvents } from "@/hooks/useMusicKitEvents";
 import { formatDuration, getArtworkUrl, getPlaybackStateLabel } from "@/lib/utils";
@@ -20,7 +20,6 @@ export function PlaybackControls() {
     queue,
     queuePosition,
   } = useMusicKitEvents();
-  const progressRef = useRef<HTMLDivElement>(null);
 
   const togglePlayPause = useCallback(async () => {
     if (!musicKit) return;
@@ -42,11 +41,9 @@ export function PlaybackControls() {
   }, [musicKit]);
 
   const handleSeek = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!musicKit || !progressRef.current || duration === 0) return;
-      const rect = progressRef.current.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
-      const seekTime = percent * duration;
+    (values: number[]) => {
+      if (!musicKit || duration === 0) return;
+      const seekTime = values[0] ?? 0;
       musicKit.seekToTime(seekTime);
     },
     [musicKit, duration]
@@ -54,9 +51,10 @@ export function PlaybackControls() {
 
   const handleVolumeChange = useCallback(
     (values: number[]) => {
-      setVolume(values[0]);
+      const newVolume = values[0] ?? 1;
+      setVolume(newVolume);
       if (musicKit) {
-        musicKit.volume = values[0];
+        musicKit.volume = newVolume;
       }
     },
     [musicKit, setVolume]
@@ -71,7 +69,6 @@ export function PlaybackControls() {
   );
 
   const isPlaying = playbackState === MusicKit.PlaybackStates.playing;
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -114,18 +111,13 @@ export function PlaybackControls() {
 
               {/* Progress Bar */}
               <div className="space-y-2">
-                <div
-                  ref={progressRef}
-                  onClick={handleSeek}
-                  className="h-2 bg-secondary rounded-full cursor-pointer group"
-                >
-                  <div
-                    className="h-full bg-gradient-to-r from-pink-500 to-red-500 rounded-full relative"
-                    style={{ width: `${progress}%` }}
-                  >
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-foreground rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </div>
+                <Slider
+                  value={[currentTime]}
+                  onValueChange={handleSeek}
+                  min={0}
+                  max={duration || 1}
+                  step={0.1}
+                />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>{formatDuration(currentTime * 1000)}</span>
                   <span>{formatDuration(duration * 1000)}</span>

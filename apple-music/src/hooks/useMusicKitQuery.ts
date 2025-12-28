@@ -1,5 +1,21 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMusicKit } from "@/contexts/MusicKitContext";
+import {
+  SearchResultsSchema,
+  ChartsResultsSchema,
+  RecentlyPlayedResultsSchema,
+  LibrarySongResultsSchema,
+  LibraryAlbumResultsSchema,
+  LibraryPlaylistResultsSchema,
+  LibraryArtistResultsSchema,
+  CatalogSongResultsSchema,
+  CatalogAlbumResultsSchema,
+  type Song,
+  type Album,
+  type Artist,
+  type Playlist,
+  type Station,
+} from "@/schemas";
 
 type SearchType = "songs" | "albums" | "artists" | "playlists";
 
@@ -14,7 +30,7 @@ export function useCatalogSearch(query: string, type: SearchType) {
     queryFn: async () => {
       if (!musicKit) throw new Error("MusicKit not initialized");
 
-      const response = await musicKit.api.music<MusicKit.SearchResults>(
+      const response = await musicKit.api.music(
         "/v1/catalog/{{storefrontId}}/search",
         {
           term: query,
@@ -23,7 +39,8 @@ export function useCatalogSearch(query: string, type: SearchType) {
         }
       );
 
-      const resultsData = response.data.results;
+      const validated = SearchResultsSchema.parse(response.data);
+      const resultsData = validated.results;
 
       if (type === "songs" && resultsData.songs?.data) {
         return resultsData.songs.data;
@@ -52,7 +69,7 @@ export function useCharts() {
     queryFn: async () => {
       if (!musicKit) throw new Error("MusicKit not initialized");
 
-      const response = await musicKit.api.music<MusicKit.ChartsResults>(
+      const response = await musicKit.api.music(
         "/v1/catalog/{{storefrontId}}/charts",
         {
           types: "songs,albums,playlists",
@@ -60,7 +77,8 @@ export function useCharts() {
         }
       );
 
-      const results = response.data.results;
+      const validated = ChartsResultsSchema.parse(response.data);
+      const results = validated.results;
       return {
         songs: results.songs?.[0]?.data || [],
         albums: results.albums?.[0]?.data || [],
@@ -82,11 +100,12 @@ export function useLibrarySongs(enabled = true) {
     queryFn: async () => {
       if (!musicKit) throw new Error("MusicKit not initialized");
 
-      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibrarySong>>(
+      const res = await musicKit.api.music(
         "/v1/me/library/songs",
         { limit: 50 }
       );
-      return res.data.data;
+      const validated = LibrarySongResultsSchema.parse(res.data);
+      return validated.data;
     },
     enabled: !!musicKit && isAuthorized && enabled,
   });
@@ -103,11 +122,12 @@ export function useLibraryAlbums(enabled = true) {
     queryFn: async () => {
       if (!musicKit) throw new Error("MusicKit not initialized");
 
-      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryAlbum>>(
+      const res = await musicKit.api.music(
         "/v1/me/library/albums",
         { limit: 50 }
       );
-      return res.data.data;
+      const validated = LibraryAlbumResultsSchema.parse(res.data);
+      return validated.data;
     },
     enabled: !!musicKit && isAuthorized && enabled,
   });
@@ -125,10 +145,11 @@ export function useLibraryAlbum(albumId: string | undefined) {
       if (!musicKit) throw new Error("MusicKit not initialized");
       if (!albumId) throw new Error("Album ID is required");
 
-      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryAlbum>>(
+      const res = await musicKit.api.music(
         `/v1/me/library/albums/${albumId}`
       );
-      return res.data.data[0];
+      const validated = LibraryAlbumResultsSchema.parse(res.data);
+      return validated.data[0];
     },
     enabled: !!musicKit && isAuthorized && !!albumId,
   });
@@ -146,10 +167,11 @@ export function useCatalogAlbum(albumId: string | undefined) {
       if (!musicKit) throw new Error("MusicKit not initialized");
       if (!albumId) throw new Error("Album ID is required");
 
-      const res = await musicKit.api.music<MusicKit.CatalogResults<MusicKit.Album>>(
+      const res = await musicKit.api.music(
         `/v1/catalog/{{storefrontId}}/albums/${albumId}`
       );
-      return res.data.data[0];
+      const validated = CatalogAlbumResultsSchema.parse(res.data);
+      return validated.data[0];
     },
     enabled: !!musicKit && !!albumId,
   });
@@ -167,11 +189,12 @@ export function useLibraryAlbumTracks(albumId: string | undefined) {
       if (!musicKit) throw new Error("MusicKit not initialized");
       if (!albumId) throw new Error("Album ID is required");
 
-      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibrarySong>>(
+      const res = await musicKit.api.music(
         `/v1/me/library/albums/${albumId}/tracks`,
         { limit: 100 }
       );
-      return res.data.data;
+      const validated = LibrarySongResultsSchema.parse(res.data);
+      return validated.data;
     },
     enabled: !!musicKit && isAuthorized && !!albumId,
   });
@@ -189,11 +212,12 @@ export function useCatalogAlbumTracks(albumId: string | undefined) {
       if (!musicKit) throw new Error("MusicKit not initialized");
       if (!albumId) throw new Error("Album ID is required");
 
-      const res = await musicKit.api.music<MusicKit.CatalogResults<MusicKit.Song>>(
+      const res = await musicKit.api.music(
         `/v1/catalog/{{storefrontId}}/albums/${albumId}/tracks`,
         { limit: 100 }
       );
-      return res.data.data;
+      const validated = CatalogSongResultsSchema.parse(res.data);
+      return validated.data;
     },
     enabled: !!musicKit && !!albumId,
   });
@@ -210,11 +234,12 @@ export function useLibraryPlaylists(enabled = true) {
     queryFn: async () => {
       if (!musicKit) throw new Error("MusicKit not initialized");
 
-      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryPlaylist>>(
+      const res = await musicKit.api.music(
         "/v1/me/library/playlists",
         { limit: 50 }
       );
-      return res.data.data;
+      const validated = LibraryPlaylistResultsSchema.parse(res.data);
+      return validated.data;
     },
     enabled: !!musicKit && isAuthorized && enabled,
   });
@@ -232,10 +257,11 @@ export function useLibraryPlaylist(playlistId: string | undefined) {
       if (!musicKit) throw new Error("MusicKit not initialized");
       if (!playlistId) throw new Error("Playlist ID is required");
 
-      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryPlaylist>>(
+      const res = await musicKit.api.music(
         `/v1/me/library/playlists/${playlistId}`
       );
-      return res.data.data[0];
+      const validated = LibraryPlaylistResultsSchema.parse(res.data);
+      return validated.data[0];
     },
     enabled: !!musicKit && isAuthorized && !!playlistId,
   });
@@ -252,11 +278,12 @@ export function useLibraryArtists(enabled = true) {
     queryFn: async () => {
       if (!musicKit) throw new Error("MusicKit not initialized");
 
-      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibraryArtist>>(
+      const res = await musicKit.api.music(
         "/v1/me/library/artists",
         { limit: 50 }
       );
-      return res.data.data;
+      const validated = LibraryArtistResultsSchema.parse(res.data);
+      return validated.data;
     },
     enabled: !!musicKit && isAuthorized && enabled,
   });
@@ -273,11 +300,12 @@ export function useRecentlyPlayed(enabled = true) {
     queryFn: async () => {
       if (!musicKit) throw new Error("MusicKit not initialized");
 
-      const res = await musicKit.api.music<MusicKit.RecentlyPlayedResults>(
+      const res = await musicKit.api.music(
         "/v1/me/recent/played",
         { limit: 10 }
       );
-      return res.data.data as (MusicKit.Album | MusicKit.Playlist | MusicKit.Station)[];
+      const validated = RecentlyPlayedResultsSchema.parse(res.data);
+      return validated.data as (Album | Playlist | Station)[];
     },
     enabled: !!musicKit && isAuthorized && enabled,
   });
@@ -328,7 +356,8 @@ export function useCreatePlaylist() {
         },
       });
 
-      return res.data.data[0] as MusicKit.LibraryPlaylist;
+      const validated = LibraryPlaylistResultsSchema.parse(res.data);
+      return validated.data[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["library", "playlists"] });
@@ -424,11 +453,12 @@ export function usePlaylistTracks(playlistId: string | null) {
     queryFn: async () => {
       if (!musicKit || !playlistId) throw new Error("MusicKit not initialized or no playlist ID");
 
-      const res = await musicKit.api.music<MusicKit.LibraryResults<MusicKit.LibrarySong>>(
+      const res = await musicKit.api.music(
         `/v1/me/library/playlists/${playlistId}/tracks`,
         { limit: 100 }
       );
-      return res.data.data;
+      const validated = LibrarySongResultsSchema.parse(res.data);
+      return validated.data;
     },
     enabled: !!musicKit && isAuthorized && !!playlistId,
   });
@@ -490,5 +520,329 @@ export function useRemoveTracksFromPlaylist() {
       queryClient.invalidateQueries({ queryKey: ["library", "playlists"] });
       queryClient.invalidateQueries({ queryKey: ["library", "playlist", variables.playlistId, "tracks"] });
     },
+  });
+}
+
+// ============================================
+// Infinite Query Hooks (for pagination)
+// ============================================
+
+const LIBRARY_PAGE_SIZE = 50;
+const SEARCH_PAGE_SIZE = 25;
+const TRACKS_PAGE_SIZE = 100;
+
+/**
+ * Infinite hook for fetching user's library songs with pagination
+ */
+export function useLibrarySongsInfinite(enabled = true) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["library", "songs", "infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const res = await musicKit.api.music(
+        "/v1/me/library/songs",
+        { limit: LIBRARY_PAGE_SIZE, offset: pageParam }
+      );
+      const validated = LibrarySongResultsSchema.parse(res.data);
+      return {
+        data: validated.data,
+        nextOffset: validated.next ? pageParam + LIBRARY_PAGE_SIZE : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && isAuthorized && enabled,
+  });
+}
+
+/**
+ * Infinite hook for fetching user's library albums with pagination
+ */
+export function useLibraryAlbumsInfinite(enabled = true) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["library", "albums", "infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const res = await musicKit.api.music(
+        "/v1/me/library/albums",
+        { limit: LIBRARY_PAGE_SIZE, offset: pageParam }
+      );
+      const validated = LibraryAlbumResultsSchema.parse(res.data);
+      return {
+        data: validated.data,
+        nextOffset: validated.next ? pageParam + LIBRARY_PAGE_SIZE : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && isAuthorized && enabled,
+  });
+}
+
+/**
+ * Infinite hook for fetching user's library playlists with pagination
+ */
+export function useLibraryPlaylistsInfinite(enabled = true) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["library", "playlists", "infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const res = await musicKit.api.music(
+        "/v1/me/library/playlists",
+        { limit: LIBRARY_PAGE_SIZE, offset: pageParam }
+      );
+      const validated = LibraryPlaylistResultsSchema.parse(res.data);
+      return {
+        data: validated.data,
+        nextOffset: validated.next ? pageParam + LIBRARY_PAGE_SIZE : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && isAuthorized && enabled,
+  });
+}
+
+/**
+ * Infinite hook for fetching user's library artists with pagination
+ */
+export function useLibraryArtistsInfinite(enabled = true) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["library", "artists", "infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const res = await musicKit.api.music(
+        "/v1/me/library/artists",
+        { limit: LIBRARY_PAGE_SIZE, offset: pageParam }
+      );
+      const validated = LibraryArtistResultsSchema.parse(res.data);
+      return {
+        data: validated.data,
+        nextOffset: validated.next ? pageParam + LIBRARY_PAGE_SIZE : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && isAuthorized && enabled,
+  });
+}
+
+/**
+ * Infinite hook for fetching recently played items with pagination
+ */
+export function useRecentlyPlayedInfinite(enabled = true) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["library", "recent", "infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const res = await musicKit.api.music(
+        "/v1/me/recent/played",
+        { limit: 10, offset: pageParam }
+      );
+      const validated = RecentlyPlayedResultsSchema.parse(res.data);
+      return {
+        data: validated.data as (Album | Playlist | Station)[],
+        nextOffset: validated.next ? pageParam + 10 : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && isAuthorized && enabled,
+  });
+}
+
+/**
+ * Infinite hook for searching the Apple Music catalog with pagination
+ */
+export function useCatalogSearchInfinite(query: string, type: SearchType) {
+  const { musicKit } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["catalog", "search", "infinite", query, type],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const response = await musicKit.api.music(
+        "/v1/catalog/{{storefrontId}}/search",
+        {
+          term: query,
+          types: type,
+          limit: SEARCH_PAGE_SIZE,
+          offset: pageParam,
+        }
+      );
+
+      const validated = SearchResultsSchema.parse(response.data);
+      const resultsData = validated.results;
+      let data: (Song | Album | Artist | Playlist)[] = [];
+      let hasNext = false;
+
+      if (type === "songs" && resultsData.songs) {
+        data = resultsData.songs.data || [];
+        hasNext = !!resultsData.songs.next;
+      } else if (type === "albums" && resultsData.albums) {
+        data = resultsData.albums.data || [];
+        hasNext = !!resultsData.albums.next;
+      } else if (type === "artists" && resultsData.artists) {
+        data = resultsData.artists.data || [];
+        hasNext = !!resultsData.artists.next;
+      } else if (type === "playlists" && resultsData.playlists) {
+        data = resultsData.playlists.data || [];
+        hasNext = !!resultsData.playlists.next;
+      }
+
+      return {
+        data,
+        nextOffset: hasNext ? pageParam + SEARCH_PAGE_SIZE : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && !!query.trim(),
+  });
+}
+
+/**
+ * Infinite hook for fetching Apple Music charts with pagination
+ */
+export function useChartsInfinite(chartType: "songs" | "albums" | "playlists") {
+  const { musicKit } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["catalog", "charts", "infinite", chartType],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+
+      const response = await musicKit.api.music(
+        "/v1/catalog/{{storefrontId}}/charts",
+        {
+          types: chartType,
+          limit: 20,
+          offset: pageParam,
+        }
+      );
+
+      const validated = ChartsResultsSchema.parse(response.data);
+      const results = validated.results;
+      let data: (Song | Album | Playlist)[] = [];
+      let hasNext = false;
+
+      if (chartType === "songs" && results.songs?.[0]) {
+        data = results.songs[0].data || [];
+        hasNext = !!results.songs[0].next;
+      } else if (chartType === "albums" && results.albums?.[0]) {
+        data = results.albums[0].data || [];
+        hasNext = !!results.albums[0].next;
+      } else if (chartType === "playlists" && results.playlists?.[0]) {
+        data = results.playlists[0].data || [];
+        hasNext = !!results.playlists[0].next;
+      }
+
+      return {
+        data,
+        nextOffset: hasNext ? pageParam + 20 : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit,
+  });
+}
+
+/**
+ * Infinite hook for fetching playlist tracks with pagination
+ */
+export function usePlaylistTracksInfinite(playlistId: string | null) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["library", "playlist", playlistId, "tracks", "infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit || !playlistId) throw new Error("MusicKit not initialized or no playlist ID");
+
+      const res = await musicKit.api.music(
+        `/v1/me/library/playlists/${playlistId}/tracks`,
+        { limit: TRACKS_PAGE_SIZE, offset: pageParam }
+      );
+      const validated = LibrarySongResultsSchema.parse(res.data);
+      return {
+        data: validated.data,
+        nextOffset: validated.next ? pageParam + TRACKS_PAGE_SIZE : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && isAuthorized && !!playlistId,
+  });
+}
+
+/**
+ * Infinite hook for fetching library album tracks with pagination
+ */
+export function useLibraryAlbumTracksInfinite(albumId: string | undefined) {
+  const { musicKit, isAuthorized } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["library", "album", albumId, "tracks", "infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+      if (!albumId) throw new Error("Album ID is required");
+
+      const res = await musicKit.api.music(
+        `/v1/me/library/albums/${albumId}/tracks`,
+        { limit: TRACKS_PAGE_SIZE, offset: pageParam }
+      );
+      const validated = LibrarySongResultsSchema.parse(res.data);
+      return {
+        data: validated.data,
+        nextOffset: validated.next ? pageParam + TRACKS_PAGE_SIZE : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && isAuthorized && !!albumId,
+  });
+}
+
+/**
+ * Infinite hook for fetching catalog album tracks with pagination
+ */
+export function useCatalogAlbumTracksInfinite(albumId: string | undefined) {
+  const { musicKit } = useMusicKit();
+
+  return useInfiniteQuery({
+    queryKey: ["catalog", "album", albumId, "tracks", "infinite"],
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!musicKit) throw new Error("MusicKit not initialized");
+      if (!albumId) throw new Error("Album ID is required");
+
+      const res = await musicKit.api.music(
+        `/v1/catalog/{{storefrontId}}/albums/${albumId}/tracks`,
+        { limit: TRACKS_PAGE_SIZE, offset: pageParam }
+      );
+      const validated = CatalogSongResultsSchema.parse(res.data);
+      return {
+        data: validated.data,
+        nextOffset: validated.next ? pageParam + TRACKS_PAGE_SIZE : undefined,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextOffset,
+    enabled: !!musicKit && !!albumId,
   });
 }

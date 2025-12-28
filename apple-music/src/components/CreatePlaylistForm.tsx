@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreatePlaylist } from "@/hooks/useMusicKitQuery";
+import type { LibraryPlaylist } from "@/schemas";
 import { Plus, X, Check } from "lucide-react";
 
 const playlistSchema = z.object({
@@ -20,7 +21,7 @@ type PlaylistFormData = z.infer<typeof playlistSchema>;
 
 interface CreatePlaylistFormProps {
   onClose: () => void;
-  onSuccess?: (playlist: MusicKit.LibraryPlaylist) => void;
+  onSuccess?: (playlist: LibraryPlaylist) => void;
 }
 
 export function CreatePlaylistForm({ onClose, onSuccess }: CreatePlaylistFormProps) {
@@ -44,7 +45,7 @@ export function CreatePlaylistForm({ onClose, onSuccess }: CreatePlaylistFormPro
       });
       setSuccess(true);
       reset();
-      onSuccess?.(playlist);
+      if (playlist) onSuccess?.(playlist);
       setTimeout(() => {
         onClose();
       }, 1500);

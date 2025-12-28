@@ -1,86 +1,33 @@
-import { useState } from "react";
-import { getRouteApi, Link } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
-import {
-  useLibrarySongs,
-  useLibraryAlbums,
-  useLibraryPlaylists,
-  useLibraryArtists,
-  useRecentlyPlayed,
-} from "@/hooks/useMusicKitQuery";
-import { formatDuration, getArtworkUrl } from "@/lib/utils";
-import { Music, Disc3, ListMusic, Mic2, Clock, Lock, Play, Plus } from "lucide-react";
-import { CreatePlaylistForm } from "./CreatePlaylistForm";
+import { Music, Disc3, ListMusic, Mic2, Clock, Lock } from "lucide-react";
+import { LibrarySongs } from "./LibrarySongs";
+import { LibraryAlbums } from "./LibraryAlbums";
+import { LibraryPlaylists } from "./LibraryPlaylists";
+import { LibraryArtists } from "./LibraryArtists";
+import { LibraryRecent } from "./LibraryRecent";
 
 type LibraryTab = "songs" | "albums" | "playlists" | "artists" | "recent";
 
 const routeApi = getRouteApi("/library");
 
+const tabs: { tab: LibraryTab; label: string; icon: React.ReactNode }[] = [
+  { tab: "songs", label: "Songs", icon: <Music className="h-4 w-4" /> },
+  { tab: "albums", label: "Albums", icon: <Disc3 className="h-4 w-4" /> },
+  { tab: "playlists", label: "Playlists", icon: <ListMusic className="h-4 w-4" /> },
+  { tab: "artists", label: "Artists", icon: <Mic2 className="h-4 w-4" /> },
+  { tab: "recent", label: "Recent", icon: <Clock className="h-4 w-4" /> },
+];
+
 export function UserLibrary() {
-  const { musicKit, isAuthorized, authorize } = useMusicKit();
+  const { isAuthorized, authorize } = useMusicKit();
   const { tab } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
-
-  const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
 
   const handleTabChange = (newTab: LibraryTab) => {
     navigate({ search: { tab: newTab } });
   };
-
-  // Fetch data only for the active tab
-  const songsQuery = useLibrarySongs(tab === "songs");
-  const albumsQuery = useLibraryAlbums(tab === "albums");
-  const playlistsQuery = useLibraryPlaylists(tab === "playlists");
-  const artistsQuery = useLibraryArtists(tab === "artists");
-  const recentQuery = useRecentlyPlayed(tab === "recent");
-
-  const isLoading =
-    (tab === "songs" && songsQuery.isLoading) ||
-    (tab === "albums" && albumsQuery.isLoading) ||
-    (tab === "playlists" && playlistsQuery.isLoading) ||
-    (tab === "artists" && artistsQuery.isLoading) ||
-    (tab === "recent" && recentQuery.isLoading);
-
-  const error =
-    (tab === "songs" && songsQuery.error) ||
-    (tab === "albums" && albumsQuery.error) ||
-    (tab === "playlists" && playlistsQuery.error) ||
-    (tab === "artists" && artistsQuery.error) ||
-    (tab === "recent" && recentQuery.error);
-
-  const refetch = () => {
-    if (tab === "songs") songsQuery.refetch();
-    if (tab === "albums") albumsQuery.refetch();
-    if (tab === "playlists") playlistsQuery.refetch();
-    if (tab === "artists") artistsQuery.refetch();
-    if (tab === "recent") recentQuery.refetch();
-  };
-
-  const songs = songsQuery.data ?? [];
-  const albums = albumsQuery.data ?? [];
-  const playlists = playlistsQuery.data ?? [];
-  const artists = artistsQuery.data ?? [];
-  const recentlyPlayed = recentQuery.data ?? [];
-
-  const playSong = async (song: MusicKit.LibrarySong) => {
-    if (!musicKit) return;
-    try {
-      await musicKit.setQueue({ song: song.id });
-      await musicKit.play();
-    } catch (err) {
-      console.error("[UserLibrary] Play failed:", err);
-    }
-  };
-
-  const tabs: { tab: LibraryTab; label: string; icon: React.ReactNode }[] = [
-    { tab: "songs", label: "Songs", icon: <Music className="h-4 w-4" /> },
-    { tab: "albums", label: "Albums", icon: <Disc3 className="h-4 w-4" /> },
-    { tab: "playlists", label: "Playlists", icon: <ListMusic className="h-4 w-4" /> },
-    { tab: "artists", label: "Artists", icon: <Mic2 className="h-4 w-4" /> },
-    { tab: "recent", label: "Recent", icon: <Clock className="h-4 w-4" /> },
-  ];
 
   if (!isAuthorized) {
     return (
@@ -122,228 +69,12 @@ export function UserLibrary() {
         ))}
       </div>
 
-      {/* Loading */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            {error instanceof Error ? error.message : "Failed to load library"}
-            <Button variant="link" onClick={refetch} className="ml-2 h-auto p-0">
-              Retry
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Library Songs */}
-      {!isLoading && tab === "songs" && (
-        <div className="space-y-1">
-          {songs.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Music className="h-10 w-10 mx-auto mb-2" />
-              <p>No songs in your library</p>
-            </div>
-          ) : (
-            songs.map((song, idx) => (
-              <div
-                key={song.id}
-                onClick={() => playSong(song)}
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
-              >
-                <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
-                  {idx + 1}
-                </span>
-                <span className="w-6 text-center hidden group-hover:flex justify-center text-foreground">
-                  <Play className="h-4 w-4" />
-                </span>
-                {song.attributes.artwork ? (
-                  <img
-                    src={getArtworkUrl(song.attributes.artwork, 48)}
-                    alt={song.attributes.name}
-                    className="w-12 h-12 rounded-md"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-                    <Music className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate">{song.attributes.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {song.attributes.artistName}
-                  </p>
-                </div>
-                <div className="text-sm text-muted-foreground w-12 text-right">
-                  {formatDuration(song.attributes.durationInMillis)}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Library Albums */}
-      {!isLoading && tab === "albums" && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {albums.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              <Disc3 className="h-10 w-10 mx-auto mb-2" />
-              <p>No albums in your library</p>
-            </div>
-          ) : (
-            albums.map((album) => (
-              <Link
-                key={album.id}
-                to="/library/albums/$albumId"
-                params={{ albumId: album.id }}
-                className="group cursor-pointer block"
-              >
-                <div className="relative aspect-square mb-2">
-                  {album.attributes.artwork ? (
-                    <img
-                      src={getArtworkUrl(album.attributes.artwork, 200)}
-                      alt={album.attributes.name}
-                      className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
-                    />
-                  ) : (
-                    <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
-                      <Disc3 className="h-10 w-10 text-muted-foreground" />
-                    </div>
-                  )}
-                </div>
-                <p className="font-medium text-foreground text-sm truncate">{album.attributes.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{album.attributes.artistName}</p>
-              </Link>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Library Playlists */}
-      {!isLoading && tab === "playlists" && (
-        <section className="space-y-4">
-          {/* Create Playlist Form */}
-          {showCreatePlaylist && (
-            <CreatePlaylistForm
-              onClose={() => setShowCreatePlaylist(false)}
-              onSuccess={() => setShowCreatePlaylist(false)}
-            />
-          )}
-
-          {/* Create button */}
-          {!showCreatePlaylist && (
-            <Button
-              onClick={() => setShowCreatePlaylist(true)}
-              variant="secondary"
-              className="w-full"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create New Playlist
-            </Button>
-          )}
-
-          {/* Playlist Grid */}
-          <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 list-none p-0">
-            {playlists.length === 0 && !showCreatePlaylist ? (
-              <li className="col-span-full text-center py-12 text-muted-foreground">
-                <ListMusic className="h-10 w-10 mx-auto mb-2" />
-                <p>No playlists in your library</p>
-              </li>
-            ) : (
-              playlists.map((playlist) => (
-                <li key={playlist.id} className="group">
-                  <Link
-                    to="/library/playlists/$playlistId"
-                    params={{ playlistId: playlist.id }}
-                    className="block"
-                  >
-                    <figure className="relative aspect-square mb-2">
-                      {playlist.attributes.artwork ? (
-                        <img
-                          src={getArtworkUrl(playlist.attributes.artwork, 200)}
-                          alt=""
-                          className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
-                        />
-                      ) : (
-                        <span className="w-full h-full rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
-                          <ListMusic className="h-10 w-10 text-white" />
-                        </span>
-                      )}
-                    </figure>
-                    <figcaption className="font-medium text-foreground text-sm truncate">
-                      {playlist.attributes.name}
-                    </figcaption>
-                  </Link>
-                </li>
-              ))
-            )}
-          </ul>
-        </section>
-      )}
-
-      {/* Library Artists */}
-      {!isLoading && tab === "artists" && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {artists.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              <Mic2 className="h-10 w-10 mx-auto mb-2" />
-              <p>No artists in your library</p>
-            </div>
-          ) : (
-            artists.map((artist) => (
-              <div key={artist.id} className="text-center">
-                <div className="w-24 h-24 mx-auto rounded-full bg-secondary flex items-center justify-center mb-2">
-                  <Mic2 className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <p className="font-medium text-foreground text-sm truncate">{artist.attributes.name}</p>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Recently Played */}
-      {!isLoading && tab === "recent" && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {recentlyPlayed.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              <Clock className="h-10 w-10 mx-auto mb-2" />
-              <p>No recently played items</p>
-            </div>
-          ) : (
-            recentlyPlayed.map((item) => (
-              <div key={item.id} className="group cursor-pointer">
-                <div className="relative aspect-square mb-2">
-                  {item.attributes.artwork ? (
-                    <img
-                      src={getArtworkUrl(item.attributes.artwork, 200)}
-                      alt={item.attributes.name}
-                      className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
-                    />
-                  ) : (
-                    <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
-                      <Music className="h-10 w-10 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                    <Play className="h-8 w-8 text-white" />
-                  </div>
-                  <span className="absolute bottom-2 left-2 text-xs bg-background/80 px-2 py-0.5 rounded capitalize">
-                    {item.type.replace("s", "")}
-                  </span>
-                </div>
-                <p className="font-medium text-foreground text-sm truncate">{item.attributes.name}</p>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+      {/* Tab Content */}
+      {tab === "songs" && <LibrarySongs />}
+      {tab === "albums" && <LibraryAlbums />}
+      {tab === "playlists" && <LibraryPlaylists />}
+      {tab === "artists" && <LibraryArtists />}
+      {tab === "recent" && <LibraryRecent />}
     </div>
   );
 }

@@ -14,7 +14,12 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const navItems = [
+const navItems: {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+  requiresAuth?: boolean;
+}[] = [
   { to: "/", label: "Search", icon: <Search className="h-4 w-4" /> },
   { to: "/charts", label: "Charts", icon: <BarChart3 className="h-4 w-4" /> },
   {
@@ -24,7 +29,7 @@ const navItems = [
     requiresAuth: true,
   },
   { to: "/player", label: "Player", icon: <Headphones className="h-4 w-4" /> },
-] as const;
+];
 
 export function RootLayout() {
   const { isConfigured, isReady, isAuthorized, error, authorize, checkCredentials } =

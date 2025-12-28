@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,11 +6,12 @@ import { z } from "zod";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import {
   useLibraryPlaylist,
-  usePlaylistTracks,
+  usePlaylistTracksInfinite,
   useUpdatePlaylist,
   useDeletePlaylist,
 } from "@/hooks/useMusicKitQuery";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
+import type { LibrarySong } from "@/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,11 +28,12 @@ import {
   Check,
   Lock,
 } from "lucide-react";
+import { VirtualList } from "./VirtualList";
 
 const routeApi = getRouteApi("/library/playlists/$playlistId");
 
 const playlistSchema = z.object({
-  name: z.string().min(1, "Playlist name is required"),
+  name: z.string().optional(),
   description: z.string().optional(),
 });
 
@@ -43,9 +45,15 @@ export function PlaylistDetailPage() {
   const navigate = routeApi.useNavigate();
 
   const { data: playlist, isLoading: isLoadingPlaylist } = useLibraryPlaylist(playlistId);
-  const { data: tracks = [], isLoading: isLoadingTracks } = usePlaylistTracks(playlistId);
+  const tracksQuery = usePlaylistTracksInfinite(playlistId);
   const updatePlaylist = useUpdatePlaylist();
   const deletePlaylist = useDeletePlaylist();
+
+  // Flatten paginated data
+  const tracks = useMemo(
+    () => tracksQuery.data?.pages.flatMap((p) => p.data) ?? [],
+    [tracksQuery.data]
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -113,12 +121,54 @@ export function PlaylistDetailPage() {
   const playSong = async (startIndex: number) => {
     if (!musicKit || !playlist) return;
     try {
-      await musicKit.setQueue({ playlist: playlist.id, startWith: startIndex });
+      await musicKit.setQueue({ playlist: playlist.id });
+      await musicKit.changeToMediaAtIndex(startIndex);
       await musicKit.play();
     } catch (err) {
       console.error("[PlaylistDetailPage] Play song failed:", err);
     }
   };
+
+  // Render function for virtual list
+  const renderTrack = useCallback(
+    (track: LibrarySong, idx: number) => (
+      <div
+        key={track.id}
+        onClick={() => playSong(idx)}
+        className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
+      >
+        <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
+          {idx + 1}
+        </span>
+        <span className="w-6 text-center hidden group-hover:flex justify-center text-foreground">
+          <Play className="h-4 w-4" />
+        </span>
+        {track.attributes.artwork ? (
+          <img
+            src={getArtworkUrl(track.attributes.artwork, 48)}
+            alt={track.attributes.name}
+            className="w-12 h-12 rounded-md"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
+            <Music className="h-5 w-5 text-muted-foreground" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-foreground truncate">
+            {track.attributes.name}
+          </p>
+          <p className="text-sm text-muted-foreground truncate">
+            {track.attributes.artistName}
+          </p>
+        </div>
+        <div className="text-sm text-muted-foreground w-12 text-right">
+          {formatDuration(track.attributes.durationInMillis)}
+        </div>
+      </div>
+    ),
+    [musicKit, playlist]
+  );
 
   // Not authorized
   if (!isAuthorized) {
@@ -187,7 +237,7 @@ export function PlaylistDetailPage() {
           {playlist.attributes.artwork ? (
             <img
               src={getArtworkUrl(playlist.attributes.artwork, 200)}
-              alt={playlist.attributes.name}
+              alt={playlist.attributes.name ?? "Untitled Playlist"}
               className="w-full h-full object-cover rounded-lg shadow-lg"
             />
           ) : (
@@ -209,7 +259,7 @@ export function PlaylistDetailPage() {
               <div className="space-y-4">
                 <Alert variant="destructive">
                   <AlertDescription>
-                    Are you sure you want to delete "{playlist.attributes.name}
+                    Are you sure you want to delete "{playlist.attributes.name ?? "Untitled Playlist"}
                     "? This cannot be undone.
                   </AlertDescription>
                 </Alert>
@@ -289,7 +339,7 @@ export function PlaylistDetailPage() {
           <div className="flex flex-col justify-end gap-3">
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                {playlist.attributes.name}
+                {playlist.attributes.name ?? "Untitled Playlist"}
               </h1>
               {playlist.attributes.description?.standard && (
                 <p className="text-muted-foreground mt-1">
@@ -321,7 +371,7 @@ export function PlaylistDetailPage() {
       </div>
 
       {/* Track list */}
-      {isLoadingTracks ? (
+      {tracksQuery.isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
@@ -331,44 +381,15 @@ export function PlaylistDetailPage() {
           <p>No songs in this playlist</p>
         </div>
       ) : (
-        <div className="space-y-1">
-          {tracks.map((track, idx) => (
-            <div
-              key={track.id}
-              onClick={() => playSong(idx)}
-              className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
-            >
-              <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
-                {idx + 1}
-              </span>
-              <span className="w-6 text-center hidden group-hover:flex justify-center text-foreground">
-                <Play className="h-4 w-4" />
-              </span>
-              {track.attributes.artwork ? (
-                <img
-                  src={getArtworkUrl(track.attributes.artwork, 48)}
-                  alt={track.attributes.name}
-                  className="w-12 h-12 rounded-md"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-                  <Music className="h-5 w-5 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">
-                  {track.attributes.name}
-                </p>
-                <p className="text-sm text-muted-foreground truncate">
-                  {track.attributes.artistName}
-                </p>
-              </div>
-              <div className="text-sm text-muted-foreground w-12 text-right">
-                {formatDuration(track.attributes.durationInMillis)}
-              </div>
-            </div>
-          ))}
-        </div>
+        <VirtualList
+          items={tracks}
+          hasNextPage={!!tracksQuery.hasNextPage}
+          isFetchingNextPage={tracksQuery.isFetchingNextPage}
+          fetchNextPage={() => tracksQuery.fetchNextPage()}
+          renderItem={renderTrack}
+          estimateSize={72}
+          className="h-[500px]"
+        />
       )}
     </div>
   );
