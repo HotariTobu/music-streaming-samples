@@ -138,7 +138,7 @@ export function PlaybackControls() {
                   variant="ghost"
                   size="icon"
                   onClick={skipPrevious}
-                  className="h-10 w-10 rounded-full hover:bg-secondary"
+                  className="h-10 w-10 rounded-full hover:bg-foreground/10"
                 >
                   <SkipBack className="h-5 w-5" />
                 </Button>
@@ -146,7 +146,7 @@ export function PlaybackControls() {
                   variant="ghost"
                   size="icon"
                   onClick={togglePlayPause}
-                  className="h-10 w-10 rounded-full hover:bg-secondary"
+                  className="h-10 w-10 rounded-full hover:bg-foreground/10"
                 >
                   {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
                 </Button>
@@ -154,7 +154,7 @@ export function PlaybackControls() {
                   variant="ghost"
                   size="icon"
                   onClick={skipNext}
-                  className="h-10 w-10 rounded-full hover:bg-secondary"
+                  className="h-10 w-10 rounded-full hover:bg-foreground/10"
                 >
                   <SkipForward className="h-5 w-5" />
                 </Button>
@@ -225,7 +225,7 @@ export function PlaybackControls() {
                   flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors
                   ${idx === queuePosition
                     ? "bg-primary/20 border border-primary/30"
-                    : "hover:bg-secondary/50"
+                    : "hover:bg-muted/50"
                   }
                 `}
               >
