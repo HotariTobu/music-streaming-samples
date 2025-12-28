@@ -1,16 +1,16 @@
 import type { ReactNode } from "react";
-import { useCallback } from "react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { VirtualList } from "@/components/VirtualList";
-import { formatDuration, getArtworkUrl } from "@/lib/utils";
+import { SongList, type Song } from "@/components/SongList";
+import { getArtworkUrl } from "@/lib/utils";
 import type { MediaDetailData, TrackData } from "@/lib/media-transforms";
-import { ArrowLeft, Play, Music, Disc, ListMusic } from "lucide-react";
+import { ArrowLeft, Music, Disc, ListMusic } from "lucide-react";
 
 interface MediaDetailViewProps {
   media: MediaDetailData;
   tracks: TrackData[];
   mediaType: "album" | "playlist";
-  onBack: () => void;
+  backTo: string;
   onPlayTrack: (index: number) => void;
   isLoadingTracks: boolean;
   hasNextPage: boolean;
@@ -24,7 +24,7 @@ export function MediaDetailView({
   media,
   tracks,
   mediaType,
-  onBack,
+  backTo,
   onPlayTrack,
   isLoadingTracks,
   hasNextPage,
@@ -39,51 +39,23 @@ export function MediaDetailView({
   const trackCount = media.trackCount ?? tracks.length;
   const stats = buildStats(trackCount, media.releaseYear, media.genre);
 
-  const renderTrack = useCallback(
-    (track: TrackData, idx: number) => (
-      <div
-        key={track.id}
-        onClick={() => onPlayTrack(idx)}
-        className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
-      >
-        <span className="w-6 text-center text-muted-foreground text-sm group-hover:hidden">
-          {track.trackNumber ?? idx + 1}
-        </span>
-        <span className="w-6 text-center hidden group-hover:flex justify-center text-foreground">
-          <Play className="h-4 w-4" />
-        </span>
-        {showTrackArtwork &&
-          (track.artwork ? (
-            <img
-              src={getArtworkUrl(track.artwork, 48)}
-              alt={track.name}
-              className="w-12 h-12 rounded-md"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-              <Music className="h-5 w-5 text-muted-foreground" />
-            </div>
-          ))}
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground truncate">{track.name}</p>
-          <p className="text-sm text-muted-foreground truncate">
-            {track.artistName}
-          </p>
-        </div>
-        <div className="text-sm text-muted-foreground w-12 text-right">
-          {formatDuration(track.durationInMillis)}
-        </div>
-      </div>
-    ),
-    [onPlayTrack, showTrackArtwork]
-  );
+  // Transform tracks to Song type for SongList
+  const songs: Song[] = tracks.map((track) => ({
+    id: track.id,
+    name: track.name,
+    artistName: track.artistName,
+    durationInMillis: track.durationInMillis,
+    artwork: track.artwork,
+  }));
 
   return (
     <div className="space-y-6">
       {/* Header with back button */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ArrowLeft className="h-5 w-5" />
+        <Button variant="ghost" size="icon" asChild>
+          <Link to={backTo}>
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
         </Button>
         <h2 className="text-xl font-semibold">{title}</h2>
       </div>
@@ -134,13 +106,13 @@ export function MediaDetailView({
           <p>No tracks available</p>
         </div>
       ) : (
-        <VirtualList
-          items={tracks}
+        <SongList
+          songs={songs}
+          onPlay={onPlayTrack}
+          showArtwork={showTrackArtwork}
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
           fetchNextPage={fetchNextPage}
-          renderItem={renderTrack}
-          estimateSize={showTrackArtwork ? 72 : 64}
           className="h-[500px]"
         />
       )}

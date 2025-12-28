@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getRouteApi, useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useCatalogAlbum } from "@/hooks/useCatalogAlbum";
 import { useCatalogAlbumTracksInfinite } from "@/hooks/useCatalogAlbumTracksInfinite";
@@ -12,12 +12,13 @@ import { MediaDetailView } from "@/components/media-detail";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play } from "lucide-react";
 
-const routeApi = getRouteApi("/albums/$albumId");
+interface CatalogAlbumDetailPageProps {
+  albumId: string;
+  backTo: string;
+}
 
-export function CatalogAlbumDetailPage() {
+export function CatalogAlbumDetailPage({ albumId, backTo }: CatalogAlbumDetailPageProps) {
   const { isReady } = useMusicKit();
-  const { albumId } = routeApi.useParams();
-  const router = useRouter();
 
   const { data: album, isLoading } = useCatalogAlbum(albumId);
   const tracksQuery = useCatalogAlbumTracksInfinite(albumId);
@@ -30,10 +31,6 @@ export function CatalogAlbumDetailPage() {
       ),
     [tracksQuery.data]
   );
-
-  const handleBack = () => {
-    router.history.back();
-  };
 
   const handlePlay = () => {
     if (album) playAlbum(album.id);
@@ -57,8 +54,10 @@ export function CatalogAlbumDetailPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={handleBack}>
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={backTo}>
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
           </Button>
           <h2 className="text-xl font-semibold">Album not found</h2>
         </div>
@@ -71,7 +70,7 @@ export function CatalogAlbumDetailPage() {
       media={transformCatalogAlbum(album)}
       tracks={tracks}
       mediaType="album"
-      onBack={handleBack}
+      backTo={backTo}
       onPlayTrack={handlePlayTrack}
       isLoadingTracks={tracksQuery.isLoading}
       hasNextPage={!!tracksQuery.hasNextPage}

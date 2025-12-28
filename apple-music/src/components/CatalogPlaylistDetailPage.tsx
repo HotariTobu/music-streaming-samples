@@ -1,39 +1,29 @@
 import { useMemo } from "react";
-import { getRouteApi, useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useCatalogPlaylist } from "@/hooks/useCatalogPlaylist";
 import { useCatalogPlaylistTracksInfinite } from "@/hooks/useCatalogPlaylistTracksInfinite";
 import { usePlayPlaylist } from "@/hooks/usePlayPlaylist";
-import {
-  transformCatalogPlaylist,
-  transformCatalogSongs,
-} from "@/lib/media-transforms";
+import { transformCatalogPlaylist, transformCatalogSongs } from "@/lib/media-transforms";
 import { MediaDetailView } from "@/components/media-detail";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play } from "lucide-react";
 
-const routeApi = getRouteApi("/playlists/$playlistId");
+interface CatalogPlaylistDetailPageProps {
+  playlistId: string;
+  backTo: string;
+}
 
-export function CatalogPlaylistDetailPage() {
+export function CatalogPlaylistDetailPage({ playlistId, backTo }: CatalogPlaylistDetailPageProps) {
   const { isReady } = useMusicKit();
-  const { playlistId } = routeApi.useParams();
-  const router = useRouter();
-
   const { data: playlist, isLoading } = useCatalogPlaylist(playlistId);
   const tracksQuery = useCatalogPlaylistTracksInfinite(playlistId);
   const playPlaylist = usePlayPlaylist();
 
   const tracks = useMemo(
-    () =>
-      transformCatalogSongs(
-        tracksQuery.data?.pages.flatMap((p) => p.data) ?? []
-      ),
+    () => transformCatalogSongs(tracksQuery.data?.pages.flatMap((p) => p.data) ?? []),
     [tracksQuery.data]
   );
-
-  const handleBack = () => {
-    router.history.back();
-  };
 
   const handlePlay = () => {
     if (playlist) playPlaylist(playlist.id);
@@ -43,7 +33,6 @@ export function CatalogPlaylistDetailPage() {
     if (playlist) playPlaylist(playlist.id, index);
   };
 
-  // Loading (including MusicKit initialization)
   if (isLoading || !isReady) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -52,13 +41,14 @@ export function CatalogPlaylistDetailPage() {
     );
   }
 
-  // Not found
   if (!playlist) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={handleBack}>
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={backTo}>
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
           </Button>
           <h2 className="text-xl font-semibold">Playlist not found</h2>
         </div>
@@ -71,7 +61,7 @@ export function CatalogPlaylistDetailPage() {
       media={transformCatalogPlaylist(playlist)}
       tracks={tracks}
       mediaType="playlist"
-      onBack={handleBack}
+      backTo={backTo}
       onPlayTrack={handlePlayTrack}
       isLoadingTracks={tracksQuery.isLoading}
       hasNextPage={!!tracksQuery.hasNextPage}

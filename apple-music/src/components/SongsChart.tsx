@@ -1,17 +1,25 @@
 import { useMemo, useCallback } from "react";
 import { usePlaySongs } from "@/hooks/usePlaySongs";
 import { useChartsInfinite } from "@/hooks/useChartsInfinite";
-import { formatDuration, getArtworkUrl } from "@/lib/utils";
-import type { Song } from "@/schemas";
-import { Music, Play } from "lucide-react";
-import { VirtualList } from "./VirtualList";
+import type { Song as CatalogSong } from "@/schemas";
+import { Music } from "lucide-react";
+import { SongList, type Song } from "./SongList";
 
 export function SongsChart() {
   const playSongs = usePlaySongs();
   const query = useChartsInfinite("songs");
 
-  const songs = useMemo(
-    () => (query.data?.pages.flatMap((p) => p.data) ?? []) as Song[],
+  const songs: Song[] = useMemo(
+    () =>
+      (query.data?.pages.flatMap((p) => p.data) as CatalogSong[] | undefined)?.map(
+        (s) => ({
+          id: s.id,
+          name: s.attributes.name,
+          artistName: s.attributes.artistName,
+          durationInMillis: s.attributes.durationInMillis,
+          artwork: s.attributes.artwork,
+        })
+      ) ?? [],
     [query.data]
   );
 
@@ -21,45 +29,6 @@ export function SongsChart() {
       playSongs(songIds, idx);
     },
     [songs, playSongs]
-  );
-
-  const renderSong = useCallback(
-    (song: Song, idx: number) => (
-      <div
-        key={song.id}
-        onClick={() => handlePlay(idx)}
-        className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/50 cursor-pointer group transition-colors"
-      >
-        <span className={`
-          w-8 text-center font-bold text-lg
-          ${idx < 3 ? "text-primary" : "text-muted-foreground"}
-        `}>
-          {idx + 1}
-        </span>
-        {song.attributes.artwork ? (
-          <img
-            src={getArtworkUrl(song.attributes.artwork, 48)}
-            alt={song.attributes.name}
-            className="w-12 h-12 rounded-md"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-            <Music className="h-5 w-5 text-muted-foreground" />
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground truncate">{song.attributes.name}</p>
-          <p className="text-sm text-muted-foreground truncate">
-            {song.attributes.artistName}
-          </p>
-        </div>
-        <div className="text-sm text-muted-foreground w-12 text-right">
-          {formatDuration(song.attributes.durationInMillis)}
-        </div>
-        <Play className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-    ),
-    [handlePlay]
   );
 
   if (query.isLoading) {
@@ -88,14 +57,12 @@ export function SongsChart() {
   }
 
   return (
-    <VirtualList
-      items={songs}
-      hasNextPage={!!query.hasNextPage}
+    <SongList
+      songs={songs}
+      onPlay={handlePlay}
+      hasNextPage={query.hasNextPage}
       isFetchingNextPage={query.isFetchingNextPage}
       fetchNextPage={() => query.fetchNextPage()}
-      renderItem={renderSong}
-      estimateSize={72}
-      className="h-[600px]"
     />
   );
 }

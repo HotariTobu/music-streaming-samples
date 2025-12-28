@@ -18,7 +18,7 @@ export function PlaylistsChart() {
     (playlist: Playlist, idx: number) => (
       <Link
         key={playlist.id}
-        to="/playlists/$playlistId"
+        to="/charts/playlists/$playlistId"
         params={{ playlistId: playlist.id }}
         className="group cursor-pointer block"
       >

@@ -20,7 +20,7 @@ const navItems: {
   icon: React.ReactNode;
   requiresAuth?: boolean;
 }[] = [
-  { to: "/", label: "Search", icon: <Search className="h-4 w-4" /> },
+  { to: "/search/songs", label: "Search", icon: <Search className="h-4 w-4" /> },
   { to: "/charts", label: "Charts", icon: <BarChart3 className="h-4 w-4" /> },
   {
     to: "/library",
@@ -92,7 +92,7 @@ export function RootLayout() {
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/search/songs" className="flex items-center gap-3">
               <Music className="h-6 w-6 text-primary" />
               <div>
                 <h1 className="font-bold text-lg">Apple Music API</h1>
@@ -132,10 +132,7 @@ export function RootLayout() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex gap-1 py-2 overflow-x-auto">
             {navItems.map(({ to, label, icon, requiresAuth }) => {
-              const isActive =
-                to === "/"
-                  ? location.pathname === "/" || location.pathname.startsWith("/albums")
-                  : location.pathname.startsWith(to);
+              const isActive = location.pathname.startsWith(to.split("/").slice(0, 2).join("/"));
               return (
                 <Button
                   key={to}

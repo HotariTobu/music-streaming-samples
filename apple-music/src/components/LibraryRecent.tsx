@@ -1,9 +1,23 @@
 import { useMemo, useCallback } from "react";
+import { Link } from "@tanstack/react-router";
 import { useRecentlyPlayedInfinite } from "@/hooks/useRecentlyPlayedInfinite";
 import { getArtworkUrl } from "@/lib/utils";
 import type { Album, Playlist, Station } from "@/schemas";
-import { Clock, Music, Play } from "lucide-react";
+import { Clock, Music, Radio } from "lucide-react";
 import { VirtualGrid } from "./VirtualGrid";
+
+function getItemLink(item: Album | Playlist | Station): { to: string; params: Record<string, string> } | null {
+  switch (item.type) {
+    case "albums":
+      return { to: "/library/recent/albums/$albumId", params: { albumId: item.id } };
+    case "playlists":
+      return { to: "/library/recent/playlists/$playlistId", params: { playlistId: item.id } };
+    case "stations":
+      return null;
+    default:
+      return null;
+  }
+}
 
 export function LibraryRecent() {
   const query = useRecentlyPlayedInfinite();
@@ -13,9 +27,11 @@ export function LibraryRecent() {
     [query.data]
   );
 
-  const renderRecentItem = useCallback(
-    (item: Album | Playlist | Station) => (
-      <div key={item.id} className="group cursor-pointer">
+  const renderRecentItem = useCallback((item: Album | Playlist | Station) => {
+    const link = getItemLink(item);
+
+    const content = (
+      <>
         <div className="relative aspect-square mb-2">
           {item.attributes.artwork ? (
             <img
@@ -25,21 +41,40 @@ export function LibraryRecent() {
             />
           ) : (
             <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
-              <Music className="h-10 w-10 text-muted-foreground" />
+              {item.type === "stations" ? (
+                <Radio className="h-10 w-10 text-muted-foreground" />
+              ) : (
+                <Music className="h-10 w-10 text-muted-foreground" />
+              )}
             </div>
           )}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-            <Play className="h-8 w-8 text-white" />
-          </div>
           <span className="absolute bottom-2 left-2 text-xs bg-background/80 px-2 py-0.5 rounded capitalize">
-            {item.type.replace("s", "")}
+            {item.type.replace(/s$/, "")}
           </span>
         </div>
         <p className="font-medium text-foreground text-sm truncate">{item.attributes.name}</p>
+      </>
+    );
+
+    if (link) {
+      return (
+        <Link
+          key={item.id}
+          to={link.to}
+          params={link.params}
+          className="group cursor-pointer block"
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <div key={item.id} className="group cursor-pointer">
+        {content}
       </div>
-    ),
-    []
-  );
+    );
+  }, []);
 
   if (query.isLoading) {
     return (
