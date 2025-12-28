@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreatePlaylist } from "@/hooks/useMusicKitQuery";
+import { useCreatePlaylist } from "@/hooks/useCreatePlaylist";
 import type { LibraryPlaylist } from "@/schemas";
 import { Plus, X, Check } from "lucide-react";
 

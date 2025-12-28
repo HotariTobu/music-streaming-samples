@@ -1,8 +1,8 @@
 import { useMemo, useCallback } from "react";
-import { useLibraryArtistsInfinite } from "@/hooks/useMusicKitQuery";
+import { useLibraryArtistsInfinite } from "@/hooks/useLibraryArtistsInfinite";
 import type { LibraryArtist } from "@/schemas";
 import { Mic2 } from "lucide-react";
-import { VirtualGrid } from "./VirtualList";
+import { VirtualGrid } from "./VirtualGrid";
 
 export function LibraryArtists() {
   const query = useLibraryArtistsInfinite();

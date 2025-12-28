@@ -1,10 +1,10 @@
 import { useMemo, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
-import { useLibraryAlbumsInfinite } from "@/hooks/useMusicKitQuery";
+import { useLibraryAlbumsInfinite } from "@/hooks/useLibraryAlbumsInfinite";
 import { getArtworkUrl } from "@/lib/utils";
 import type { LibraryAlbum } from "@/schemas";
 import { Disc3 } from "lucide-react";
-import { VirtualGrid } from "./VirtualList";
+import { VirtualGrid } from "./VirtualGrid";
 
 // rowHeight=240, gap=16 → cell height = 224px
 // text area ≈ 40px → image size = 184px

@@ -10,7 +10,9 @@ import { Charts } from "./components/Charts";
 import { UserLibrary } from "./components/UserLibrary";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { PlaylistDetailPage } from "./components/PlaylistDetailPage";
-import { LibraryAlbumDetailPage, CatalogAlbumDetailPage, ChartsAlbumDetailPage } from "./components/AlbumDetailPage";
+import { LibraryAlbumDetailPage } from "./components/LibraryAlbumDetailPage";
+import { CatalogAlbumDetailPage } from "./components/CatalogAlbumDetailPage";
+import { ChartsAlbumDetailPage } from "./components/ChartsAlbumDetailPage";
 
 // Search params schemas
 const searchTabSchema = z.object({

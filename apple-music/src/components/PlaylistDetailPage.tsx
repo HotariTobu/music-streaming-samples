@@ -4,12 +4,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMusicKit } from "@/contexts/MusicKitContext";
-import {
-  useLibraryPlaylist,
-  usePlaylistTracksInfinite,
-  useUpdatePlaylist,
-  useDeletePlaylist,
-} from "@/hooks/useMusicKitQuery";
+import { useLibraryPlaylist } from "@/hooks/useLibraryPlaylist";
+import { usePlaylistTracksInfinite } from "@/hooks/usePlaylistTracksInfinite";
+import { useUpdatePlaylist } from "@/hooks/useUpdatePlaylist";
+import { useDeletePlaylist } from "@/hooks/useDeletePlaylist";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 import type { LibrarySong } from "@/schemas";
 import { Button } from "@/components/ui/button";

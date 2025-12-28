@@ -1,10 +1,10 @@
 import { useMemo, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
-import { useChartsInfinite } from "@/hooks/useMusicKitQuery";
+import { useChartsInfinite } from "@/hooks/useChartsInfinite";
 import { getArtworkUrl } from "@/lib/utils";
 import type { Album } from "@/schemas";
 import { Disc3 } from "lucide-react";
-import { VirtualGrid } from "./VirtualList";
+import { VirtualGrid } from "./VirtualGrid";
 
 export function AlbumsChart() {
   const query = useChartsInfinite("albums");

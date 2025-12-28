@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useLibraryPlaylists, useAddTracksToPlaylist } from "@/hooks/useMusicKitQuery";
+import { useLibraryPlaylists } from "@/hooks/useLibraryPlaylists";
+import { useAddTracksToPlaylist } from "@/hooks/useAddTracksToPlaylist";
 import { ListMusic, Plus, Check, X, Loader2 } from "lucide-react";
 
 interface AddToPlaylistMenuProps {

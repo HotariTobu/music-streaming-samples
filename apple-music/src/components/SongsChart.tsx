@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { useMusicKit } from "@/contexts/MusicKitContext";
-import { useChartsInfinite } from "@/hooks/useMusicKitQuery";
+import { useChartsInfinite } from "@/hooks/useChartsInfinite";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 import type { Song } from "@/schemas";
 import { Music, Play } from "lucide-react";

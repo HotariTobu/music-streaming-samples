@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMusicKit } from "@/contexts/MusicKitContext";
-import { useCatalogSearchInfinite } from "@/hooks/useMusicKitQuery";
+import { useCatalogSearchInfinite } from "@/hooks/useCatalogSearchInfinite";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 import type { Song, Album, Artist, Playlist } from "@/schemas";
 import { Music, Disc3, Mic2, ListMusic, Search, Play, Plus } from "lucide-react";

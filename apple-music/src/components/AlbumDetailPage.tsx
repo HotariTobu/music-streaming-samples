@@ -1,12 +1,10 @@
 import { useMemo, useCallback } from "react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useMusicKit } from "@/contexts/MusicKitContext";
-import {
-  useLibraryAlbum,
-  useCatalogAlbum,
-  useLibraryAlbumTracksInfinite,
-  useCatalogAlbumTracksInfinite,
-} from "@/hooks/useMusicKitQuery";
+import { useLibraryAlbum } from "@/hooks/useLibraryAlbum";
+import { useCatalogAlbum } from "@/hooks/useCatalogAlbum";
+import { useLibraryAlbumTracksInfinite } from "@/hooks/useLibraryAlbumTracksInfinite";
+import { useCatalogAlbumTracksInfinite } from "@/hooks/useCatalogAlbumTracksInfinite";
 import { formatDuration, getArtworkUrl } from "@/lib/utils";
 import type { LibrarySong, Song } from "@/schemas";
 import { Button } from "@/components/ui/button";
@@ -257,14 +255,3 @@ export function AlbumDetailPage({ source }: AlbumDetailPageProps) {
   );
 }
 
-export function LibraryAlbumDetailPage() {
-  return <AlbumDetailPage source="library" />;
-}
-
-export function CatalogAlbumDetailPage() {
-  return <AlbumDetailPage source="catalog" />;
-}
-
-export function ChartsAlbumDetailPage() {
-  return <AlbumDetailPage source="charts" />;
-}

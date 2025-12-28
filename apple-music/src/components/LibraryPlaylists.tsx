@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { useLibraryPlaylistsInfinite } from "@/hooks/useMusicKitQuery";
+import { useLibraryPlaylistsInfinite } from "@/hooks/useLibraryPlaylistsInfinite";
 import { getArtworkUrl } from "@/lib/utils";
 import type { LibraryPlaylist } from "@/schemas";
 import { ListMusic, Plus } from "lucide-react";
 import { CreatePlaylistForm } from "./CreatePlaylistForm";
-import { VirtualGrid } from "./VirtualList";
+import { VirtualGrid } from "./VirtualGrid";
 
 export function LibraryPlaylists() {
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);

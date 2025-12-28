@@ -1,10 +1,10 @@
 import { useMemo, useCallback } from "react";
 import { useMusicKit } from "@/contexts/MusicKitContext";
-import { useChartsInfinite } from "@/hooks/useMusicKitQuery";
+import { useChartsInfinite } from "@/hooks/useChartsInfinite";
 import { getArtworkUrl } from "@/lib/utils";
 import type { Playlist } from "@/schemas";
 import { ListMusic, Play } from "lucide-react";
-import { VirtualGrid } from "./VirtualList";
+import { VirtualGrid } from "./VirtualGrid";
 
 export function PlaylistsChart() {
   const { musicKit } = useMusicKit();

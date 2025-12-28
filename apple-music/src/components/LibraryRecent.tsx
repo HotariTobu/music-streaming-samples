@@ -1,9 +1,9 @@
 import { useMemo, useCallback } from "react";
-import { useRecentlyPlayedInfinite } from "@/hooks/useMusicKitQuery";
+import { useRecentlyPlayedInfinite } from "@/hooks/useRecentlyPlayedInfinite";
 import { getArtworkUrl } from "@/lib/utils";
 import type { Album, Playlist, Station } from "@/schemas";
 import { Clock, Music, Play } from "lucide-react";
-import { VirtualGrid } from "./VirtualList";
+import { VirtualGrid } from "./VirtualGrid";
 
 export function LibraryRecent() {
   const query = useRecentlyPlayedInfinite();
