@@ -77,7 +77,7 @@ export function UserLibrary() {
         case "recent": {
           const res = await musicKit.api.music<MusicKit.RecentlyPlayedResults>(
             "/v1/me/recent/played",
-            { limit: 20 }
+            { limit: 10 }
           );
           data = res.data.data;
           setState((prev) => ({

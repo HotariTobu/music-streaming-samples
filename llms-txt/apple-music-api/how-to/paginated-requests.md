@@ -4,6 +4,18 @@
 
 The [Apple Music API](https://developer.apple.com/documentation/applemusicapi) supports pagination for requests that return an array of objects using the `limit` and `offset` query parameters. `limit` sets the maximum number of objects returned in a single response, and `offset` determines the first object in the response. The `next` property, adjacent to the nested `data` property in the API response, indicates at least one additional page of objects is available.
 
+## Limit Constraints by Endpoint
+
+| Endpoint Type | Default | Maximum |
+|---------------|---------|---------|
+| Search results | 5 | 25 |
+| Playlist tracks | 25 | 100 |
+| Library albums/songs | 25 | 100 |
+| Charts | 20 | 200 |
+| Recently played | 10 | 10 |
+| Heavy rotation | - | - |
+| Recommendations | - | - |
+
 ## Pagination Query Parameter Usage
 
 This example is meant to explain the use of the query params, but is likely more simple than an actual app would use.

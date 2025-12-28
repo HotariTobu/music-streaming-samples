@@ -21,7 +21,7 @@ Get started with MusicKit on the Web.
 Practical guides for common tasks.
 
 - [HTML Embeds](how-to/html-embeds.md) - Embed Apple Music content
-- [Paginated Requests](how-to/paginated-requests.md) - Handle large result sets
+- [Paginated Requests](how-to/paginated-requests.md) - Handle large result sets with limit constraints
 - [Playing Stations](how-to/playing-stations.md) - Play Apple Music radio stations
 - [Playing Music Videos](how-to/playing-music-videos.md) - Video playback setup
 - [Using Album Art](how-to/using-album-art.md) - Display artwork images
@@ -36,7 +36,7 @@ Core JavaScript API documentation.
 
 - [MusicKit](reference/javascript/musickit.md) - Global namespace and configuration
 - [MusicKit Instance](reference/javascript/musickit-instance.md) - Instance properties and methods
-- [API](reference/javascript/api.md) - Passthrough API for Apple Music API requests
+- [API](reference/javascript/api.md) - Passthrough API with endpoint details, parameter limits, and HTTP status codes
 - [Events](reference/javascript/events.md) - Event handling and callbacks
 - [MKError](reference/javascript/mkerror.md) - Error codes and handling
 - [Queue](reference/javascript/queue.md) - Queue management and QueueOptions
