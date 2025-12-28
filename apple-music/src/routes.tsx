@@ -14,9 +14,9 @@ import { CatalogSearchSongs } from "./components/CatalogSearchSongs";
 import { CatalogSearchAlbums } from "./components/CatalogSearchAlbums";
 import { CatalogSearchArtists } from "./components/CatalogSearchArtists";
 import { CatalogSearchPlaylists } from "./components/CatalogSearchPlaylists";
-import { SongsChart } from "./components/SongsChart";
-import { AlbumsChart } from "./components/AlbumsChart";
-import { PlaylistsChart } from "./components/PlaylistsChart";
+import { ChartSongs } from "./components/ChartSongs";
+import { ChartAlbums } from "./components/ChartAlbums";
+import { ChartPlaylists } from "./components/ChartPlaylists";
 import { LibrarySongs } from "./components/LibrarySongs";
 import { LibraryAlbums } from "./components/LibraryAlbums";
 import { LibraryPlaylists } from "./components/LibraryPlaylists";
@@ -114,19 +114,19 @@ const chartsRoute = createRoute({
 const chartsSongsRoute = createRoute({
   getParentRoute: () => chartsRoute,
   path: "/songs",
-  component: SongsChart,
+  component: ChartSongs,
 });
 
 const chartsAlbumsRoute = createRoute({
   getParentRoute: () => chartsRoute,
   path: "/albums",
-  component: AlbumsChart,
+  component: ChartAlbums,
 });
 
 const chartsPlaylistsRoute = createRoute({
   getParentRoute: () => chartsRoute,
   path: "/playlists",
-  component: PlaylistsChart,
+  component: ChartPlaylists,
 });
 
 const chartsAlbumDetailRoute = createRoute({

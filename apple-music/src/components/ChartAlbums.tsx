@@ -2,24 +2,24 @@ import { useMemo, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { useChartsInfinite } from "@/hooks/useChartsInfinite";
 import { getArtworkUrl } from "@/lib/utils";
-import type { Playlist } from "@/schemas";
-import { ListMusic } from "lucide-react";
+import type { Album } from "@/schemas";
+import { Disc3 } from "lucide-react";
 import { VirtualGrid } from "./VirtualGrid";
 
-export function PlaylistsChart() {
-  const query = useChartsInfinite("playlists");
+export function ChartAlbums() {
+  const query = useChartsInfinite("albums");
 
-  const playlists = useMemo(
-    () => (query.data?.pages.flatMap((p) => p.data) ?? []) as Playlist[],
+  const albums = useMemo(
+    () => (query.data?.pages.flatMap((p) => p.data) ?? []) as Album[],
     [query.data]
   );
 
-  const renderPlaylist = useCallback(
-    (playlist: Playlist, idx: number) => (
+  const renderAlbum = useCallback(
+    (album: Album, idx: number) => (
       <Link
-        key={playlist.id}
-        to="/charts/playlists/$playlistId"
-        params={{ playlistId: playlist.id }}
+        key={album.id}
+        to="/charts/albums/$albumId"
+        params={{ albumId: album.id }}
         className="group cursor-pointer block"
       >
         <div className="relative aspect-square mb-2">
@@ -29,22 +29,20 @@ export function PlaylistsChart() {
           `}>
             {idx + 1}
           </span>
-          {playlist.attributes.artwork ? (
+          {album.attributes.artwork ? (
             <img
-              src={getArtworkUrl(playlist.attributes.artwork, 200)}
-              alt={playlist.attributes.name}
+              src={getArtworkUrl(album.attributes.artwork, 200)}
+              alt={album.attributes.name}
               className="w-full h-full object-cover rounded-lg shadow-md group-hover:shadow-lg transition-shadow"
             />
           ) : (
             <div className="w-full h-full rounded-lg bg-secondary flex items-center justify-center">
-              <ListMusic className="h-10 w-10 text-muted-foreground" />
+              <Disc3 className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
         </div>
-        <p className="font-medium text-foreground text-sm truncate">{playlist.attributes.name}</p>
-        {playlist.attributes.curatorName && (
-          <p className="text-xs text-muted-foreground truncate">{playlist.attributes.curatorName}</p>
-        )}
+        <p className="font-medium text-foreground text-sm truncate">{album.attributes.name}</p>
+        <p className="text-xs text-muted-foreground truncate">{album.attributes.artistName}</p>
       </Link>
     ),
     []
@@ -61,27 +59,27 @@ export function PlaylistsChart() {
   if (query.error) {
     return (
       <div className="text-center py-12 text-destructive">
-        {query.error instanceof Error ? query.error.message : "Failed to load playlists chart"}
+        {query.error instanceof Error ? query.error.message : "Failed to load albums chart"}
       </div>
     );
   }
 
-  if (playlists.length === 0) {
+  if (albums.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <ListMusic className="h-10 w-10 mx-auto mb-2" />
-        <p>No playlists available</p>
+        <Disc3 className="h-10 w-10 mx-auto mb-2" />
+        <p>No albums available</p>
       </div>
     );
   }
 
   return (
     <VirtualGrid
-      items={playlists}
+      items={albums}
       hasNextPage={!!query.hasNextPage}
       isFetchingNextPage={query.isFetchingNextPage}
       fetchNextPage={() => query.fetchNextPage()}
-      renderItem={renderPlaylist}
+      renderItem={renderAlbum}
       columns={4}
       rowHeight={240}
       className="h-[600px]"

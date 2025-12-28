@@ -5,7 +5,7 @@ import type { Song as CatalogSong } from "@/schemas";
 import { Music } from "lucide-react";
 import { SongList, type Song } from "./SongList";
 
-export function SongsChart() {
+export function ChartSongs() {
   const playSongs = usePlaySongs();
   const query = useChartsInfinite("songs");
 
