@@ -91,7 +91,7 @@ export function MediaDetailView({
               <p className="text-sm text-muted-foreground mt-2">{stats}</p>
             )}
           </div>
-          <div className="flex gap-2 justify-end">{actions}</div>
+          <div className="flex gap-2">{actions}</div>
         </div>
       </div>
 
