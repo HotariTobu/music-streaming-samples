@@ -6,14 +6,13 @@ import { z } from "zod";
 import { useMusicKit } from "@/contexts/MusicKitContext";
 import { useLibraryPlaylist } from "@/hooks/useLibraryPlaylist";
 import { useUpdatePlaylist } from "@/hooks/useUpdatePlaylist";
-import { useDeletePlaylist } from "@/hooks/useDeletePlaylist";
 import { getArtworkUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Trash2, X, Check, ListMusic } from "lucide-react";
+import { ArrowLeft, X, Check, ListMusic } from "lucide-react";
 
 const playlistSchema = z.object({
   name: z.string().optional(),
@@ -35,9 +34,7 @@ export function LibraryPlaylistDetailEditPage({
   const { isReady } = useMusicKit();
   const { data: playlist, isLoading } = useLibraryPlaylist(playlistId);
   const updatePlaylist = useUpdatePlaylist();
-  const deletePlaylist = useDeletePlaylist();
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const {
@@ -58,11 +55,6 @@ export function LibraryPlaylistDetailEditPage({
     setTimeout(() => {
       navigate({ to: backTo });
     }, 1500);
-  };
-
-  const handleDelete = async () => {
-    await deletePlaylist.mutateAsync(playlistId);
-    navigate({ to: "/library/playlists" });
   };
 
   if (isLoading || !isReady) {
@@ -126,31 +118,6 @@ export function LibraryPlaylistDetailEditPage({
               <Check className="h-5 w-5" />
               <span>Updated!</span>
             </div>
-          ) : showDeleteConfirm ? (
-            <div className="space-y-4">
-              <Alert variant="destructive">
-                <AlertDescription>
-                  Are you sure you want to delete "{playlistName}"? This cannot
-                  be undone.
-                </AlertDescription>
-              </Alert>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={deletePlaylist.isPending}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={deletePlaylist.isPending}
-                >
-                  {deletePlaylist.isPending ? "Deleting..." : "Delete"}
-                </Button>
-              </div>
-            </div>
           ) : (
             <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
               <div className="space-y-2">
@@ -177,30 +144,19 @@ export function LibraryPlaylistDetailEditPage({
                   </AlertDescription>
                 </Alert>
               )}
-              <div className="flex gap-2 justify-between">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
+              <div className="flex gap-2 justify-end">
+                <Button variant="ghost" asChild>
+                  <Link to={backTo}>
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Link>
                 </Button>
-                <div className="flex gap-2">
-                  <Button variant="ghost" asChild>
-                    <Link to={backTo}>
-                      <X className="h-4 w-4 mr-1" />
-                      Cancel
-                    </Link>
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={updatePlaylist.isPending || !isDirty}
-                  >
-                    {updatePlaylist.isPending ? "Saving..." : "Save"}
-                  </Button>
-                </div>
+                <Button
+                  type="submit"
+                  disabled={updatePlaylist.isPending || !isDirty}
+                >
+                  {updatePlaylist.isPending ? "Saving..." : "Save"}
+                </Button>
               </div>
             </form>
           )}
