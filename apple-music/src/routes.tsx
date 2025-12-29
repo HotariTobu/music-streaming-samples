@@ -27,6 +27,7 @@ import { CatalogAlbumDetailPage } from "./components/CatalogAlbumDetailPage";
 import { LibraryAlbumDetailPage } from "./components/LibraryAlbumDetailPage";
 import { CatalogPlaylistDetailPage } from "./components/CatalogPlaylistDetailPage";
 import { LibraryPlaylistDetailPage } from "./components/LibraryPlaylistDetailPage";
+import { LibraryPlaylistDetailEditPage } from "./components/LibraryPlaylistDetailEditPage";
 
 // Search params schemas
 const searchQuerySchema = z.object({
@@ -202,6 +203,20 @@ const libraryPlaylistDetailRoute = createRoute({
   },
 });
 
+const libraryPlaylistEditRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/playlists/$playlistId/edit",
+  component: function LibraryPlaylistEditRoute() {
+    const { playlistId } = getRouteApi("/library/playlists/$playlistId/edit").useParams();
+    return (
+      <LibraryPlaylistDetailEditPage
+        playlistId={playlistId}
+        backTo={`/library/playlists/${playlistId}`}
+      />
+    );
+  },
+});
+
 const recentAlbumDetailRoute = createRoute({
   getParentRoute: () => libraryRoute,
   path: "/recent/albums/$albumId",
@@ -253,6 +268,7 @@ const routeTree = rootRoute.addChildren([
     libraryRecentRoute,
     libraryAlbumDetailRoute,
     libraryPlaylistDetailRoute,
+    libraryPlaylistEditRoute,
     recentAlbumDetailRoute,
     recentPlaylistDetailRoute,
   ]),

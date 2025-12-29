@@ -7,7 +7,7 @@ import { usePlaySongs } from "@/hooks/usePlaySongs";
 import { transformLibraryPlaylist, transformLibrarySongs } from "@/lib/media-transforms";
 import { MediaDetailView } from "@/components/media-detail";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Play } from "lucide-react";
+import { ArrowLeft, Play, Pencil } from "lucide-react";
 
 interface LibraryPlaylistDetailPageProps {
   playlistId: string;
@@ -75,14 +75,23 @@ export function LibraryPlaylistDetailPage({ playlistId, backTo }: LibraryPlaylis
       fetchNextPage={() => tracksQuery.fetchNextPage()}
       showTrackArtwork
       actions={
-        <Button
-          onClick={handlePlay}
-          disabled={tracks.length === 0}
-          className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
-        >
-          <Play className="h-4 w-4 mr-2" />
-          Play
-        </Button>
+        <>
+          {playlist.attributes.canEdit && (
+            <Button variant="outline" size="icon" asChild>
+              <Link to={`/library/playlists/${playlistId}/edit`}>
+                <Pencil className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+          <Button
+            onClick={handlePlay}
+            disabled={tracks.length === 0}
+            className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
+          >
+            <Play className="h-4 w-4 mr-2" />
+            Play
+          </Button>
+        </>
       }
     />
   );

@@ -1,8 +1,12 @@
 import { useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { LibraryPlaylist } from "@/schemas";
+import { useMusicKit } from "@/contexts/MusicKitContext";
+import { useLibraryPlaylist } from "@/hooks/useLibraryPlaylist";
+import { useUpdatePlaylist } from "@/hooks/useUpdatePlaylist";
+import { useDeletePlaylist } from "@/hooks/useDeletePlaylist";
 import { getArtworkUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,25 +22,21 @@ const playlistSchema = z.object({
 
 type PlaylistFormData = z.infer<typeof playlistSchema>;
 
-interface PlaylistEditViewProps {
-  playlist: LibraryPlaylist;
-  onSave: (data: PlaylistFormData) => Promise<void>;
-  onCancel: () => void;
-  onDelete: () => Promise<void>;
-  isSaving: boolean;
-  isDeleting: boolean;
-  saveError?: Error | null;
+interface LibraryPlaylistDetailEditPageProps {
+  playlistId: string;
+  backTo: string;
 }
 
-export function PlaylistEditView({
-  playlist,
-  onSave,
-  onCancel,
-  onDelete,
-  isSaving,
-  isDeleting,
-  saveError,
-}: PlaylistEditViewProps) {
+export function LibraryPlaylistDetailEditPage({
+  playlistId,
+  backTo,
+}: LibraryPlaylistDetailEditPageProps) {
+  const navigate = useNavigate();
+  const { isReady } = useMusicKit();
+  const { data: playlist, isLoading } = useLibraryPlaylist(playlistId);
+  const updatePlaylist = useUpdatePlaylist();
+  const deletePlaylist = useDeletePlaylist();
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -47,23 +47,46 @@ export function PlaylistEditView({
   } = useForm<PlaylistFormData>({
     resolver: zodResolver(playlistSchema),
     defaultValues: {
-      name: playlist.attributes.name ?? "",
-      description: playlist.attributes.description?.standard ?? "",
+      name: playlist?.attributes.name ?? "",
+      description: playlist?.attributes.description?.standard ?? "",
     },
   });
 
   const handleSave = async (data: PlaylistFormData) => {
-    await onSave(data);
+    await updatePlaylist.mutateAsync({ playlistId, ...data });
     setSaveSuccess(true);
     setTimeout(() => {
-      setSaveSuccess(false);
-      onCancel();
+      navigate({ to: backTo });
     }, 1500);
   };
 
   const handleDelete = async () => {
-    await onDelete();
+    await deletePlaylist.mutateAsync(playlistId);
+    navigate({ to: "/library/playlists" });
   };
+
+  if (isLoading || !isReady) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!playlist) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={backTo}>
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </Button>
+          <h2 className="text-xl font-semibold">Playlist not found</h2>
+        </div>
+      </div>
+    );
+  }
 
   const playlistName = playlist.attributes.name ?? "Untitled Playlist";
 
@@ -71,8 +94,10 @@ export function PlaylistEditView({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onCancel}>
-          <ArrowLeft className="h-5 w-5" />
+        <Button variant="ghost" size="icon" asChild>
+          <Link to={backTo}>
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
         </Button>
         <h2 className="text-xl font-semibold">Edit Playlist</h2>
       </div>
@@ -113,16 +138,16 @@ export function PlaylistEditView({
                 <Button
                   variant="secondary"
                   onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isDeleting}
+                  disabled={deletePlaylist.isPending}
                 >
                   Cancel
                 </Button>
                 <Button
                   variant="destructive"
                   onClick={handleDelete}
-                  disabled={isDeleting}
+                  disabled={deletePlaylist.isPending}
                 >
-                  {isDeleting ? "Deleting..." : "Delete"}
+                  {deletePlaylist.isPending ? "Deleting..." : "Delete"}
                 </Button>
               </div>
             </div>
@@ -145,9 +170,11 @@ export function PlaylistEditView({
                   className="min-h-[60px]"
                 />
               </div>
-              {saveError && (
+              {updatePlaylist.error && (
                 <Alert variant="destructive">
-                  <AlertDescription>{saveError.message}</AlertDescription>
+                  <AlertDescription>
+                    {updatePlaylist.error.message}
+                  </AlertDescription>
                 </Alert>
               )}
               <div className="flex gap-2 justify-between">
@@ -161,12 +188,17 @@ export function PlaylistEditView({
                   Delete
                 </Button>
                 <div className="flex gap-2">
-                  <Button type="button" variant="ghost" onClick={onCancel}>
-                    <X className="h-4 w-4 mr-1" />
-                    Cancel
+                  <Button variant="ghost" asChild>
+                    <Link to={backTo}>
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Link>
                   </Button>
-                  <Button type="submit" disabled={isSaving || !isDirty}>
-                    {isSaving ? "Saving..." : "Save"}
+                  <Button
+                    type="submit"
+                    disabled={updatePlaylist.isPending || !isDirty}
+                  >
+                    {updatePlaylist.isPending ? "Saving..." : "Save"}
                   </Button>
                 </div>
               </div>

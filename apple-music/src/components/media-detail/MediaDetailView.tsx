@@ -76,7 +76,7 @@ export function MediaDetailView({
           )}
         </div>
 
-        <div className="flex flex-col justify-end gap-3">
+        <div className="flex flex-col justify-between gap-3 flex-1 min-w-0">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{media.name}</h1>
             {media.subtitle && (
@@ -91,7 +91,7 @@ export function MediaDetailView({
               <p className="text-sm text-muted-foreground mt-2">{stats}</p>
             )}
           </div>
-          <div className="flex gap-2">{actions}</div>
+          <div className="flex gap-2 justify-end">{actions}</div>
         </div>
       </div>
 
