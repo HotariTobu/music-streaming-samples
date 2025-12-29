@@ -84,12 +84,12 @@
     {
       "id": "phase-2",
       "name": "Spotify",
-      "status": "not_started",
+      "status": "done",
       "steps": [
         {
           "id": "2-1",
           "name": "Research API & Architecture",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "API research (endpoints, auth methods, SDK)",
             "Architecture decision (browser/server split)",
@@ -99,7 +99,7 @@
         {
           "id": "2-2",
           "name": "Project Setup & UI Foundation",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Project initialization",
             "UI component library setup",
@@ -111,7 +111,7 @@
         {
           "id": "2-3",
           "name": "Authentication",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "OAuth PKCE flow implementation",
             "Token endpoint",
@@ -123,7 +123,7 @@
         {
           "id": "2-4",
           "name": "Search & Browse",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Catalog search (songs/albums/artists/playlists)",
             "Charts & recommendations display",
@@ -133,7 +133,7 @@
         {
           "id": "2-5",
           "name": "Playback Control",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Playback controls (play/pause/skip)",
             "Seek bar, volume",
@@ -144,7 +144,7 @@
         {
           "id": "2-6",
           "name": "Playlist Management",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Playlist CRUD",
             "Track add/remove"
@@ -153,7 +153,7 @@
         {
           "id": "2-7",
           "name": "Library Management",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Library display (songs/albums/playlists/artists)",
             "Recently played"
@@ -164,12 +164,12 @@
     {
       "id": "phase-3",
       "name": "YouTube Music",
-      "status": "not_started",
+      "status": "done",
       "steps": [
         {
           "id": "3-1",
           "name": "Research API & Architecture",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "API research (endpoints, auth methods, SDK)",
             "Architecture decision (browser/server split)",
@@ -179,7 +179,7 @@
         {
           "id": "3-2",
           "name": "Project Setup & UI Foundation",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Project initialization",
             "UI component library setup",
@@ -191,7 +191,7 @@
         {
           "id": "3-3",
           "name": "Authentication",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "OAuth 2.0 flow implementation",
             "Token endpoint",
@@ -203,7 +203,7 @@
         {
           "id": "3-4",
           "name": "Search & Browse",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Catalog search (songs/albums/artists/playlists)",
             "Charts & recommendations display",
@@ -213,7 +213,7 @@
         {
           "id": "3-5",
           "name": "Playback Control",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Playback controls (play/pause/skip)",
             "Seek bar, volume",
@@ -224,7 +224,7 @@
         {
           "id": "3-6",
           "name": "Playlist Management",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Playlist CRUD",
             "Track add/remove"
@@ -233,7 +233,7 @@
         {
           "id": "3-7",
           "name": "Library Management",
-          "status": "not_started",
+          "status": "done",
           "details": [
             "Library display (songs/albums/playlists/artists)",
             "Recently played"
