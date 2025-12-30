@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, Fragment } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 interface VirtualGridProps<T> {
@@ -66,14 +66,14 @@ export function VirtualGrid<T>({
               style={{
                 height: virtualRow.size - gap,
                 transform: `translateY(${virtualRow.start}px)`,
-                gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
                 gap,
               }}
             >
               {rowItems.map((item, colIndex) => (
-                <div key={colIndex}>
+                <Fragment key={colIndex}>
                   {renderItem(item, startIndex + colIndex)}
-                </div>
+                </Fragment>
               ))}
             </div>
           );
