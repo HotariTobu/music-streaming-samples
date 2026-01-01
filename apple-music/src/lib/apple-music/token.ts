@@ -22,14 +22,12 @@ interface TokenResult {
 
 // In-memory credential store (volatile - lost on restart)
 let storedCredentials: AppleCredentials | null = null;
-let cachedToken: TokenResult | null = null;
 
 /**
  * Store credentials in memory
  */
 export function setCredentials(credentials: AppleCredentials): void {
   storedCredentials = credentials;
-  cachedToken = null; // Invalidate cached token
 }
 
 /**
@@ -51,7 +49,6 @@ export function getCredentials(): AppleCredentials | null {
  */
 export function clearCredentials(): void {
   storedCredentials = null;
-  cachedToken = null;
 }
 
 /**
@@ -76,26 +73,4 @@ export async function generateToken(
     .sign(key);
 
   return { token, expiresAt: new Date(exp * 1000) };
-}
-
-const TOKEN_LIFETIME_SEC = 60 * 60; // 1 hour
-
-/**
- * Get or generate a short-lived developer token for browser use
- */
-export async function getShortLivedToken(): Promise<TokenResult> {
-  if (!storedCredentials) {
-    throw new Error("Credentials not configured");
-  }
-
-  // Return cached token if still valid (with 10 min buffer)
-  if (cachedToken) {
-    const bufferMs = 10 * 60 * 1000;
-    if (cachedToken.expiresAt.getTime() - Date.now() > bufferMs) {
-      return cachedToken;
-    }
-  }
-
-  cachedToken = await generateToken(storedCredentials, TOKEN_LIFETIME_SEC);
-  return cachedToken;
 }

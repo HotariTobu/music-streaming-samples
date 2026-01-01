@@ -5,8 +5,9 @@ import {
   setCredentials,
   hasCredentials,
   clearCredentials,
-  getShortLivedToken,
   type AppleCredentials,
+  generateToken,
+  getCredentials,
 } from "./lib/apple-music/token";
 
 function getLocalIP() {
@@ -40,28 +41,6 @@ const server = serve({
   routes: {
     // Serve index.html for all unmatched routes.
     "/*": index,
-
-    "/api/hello": {
-      async GET(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "GET",
-        });
-      },
-      async PUT(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "PUT",
-        });
-      },
-    },
-
-    "/api/hello/:name": async req => {
-      const name = req.params.name;
-      return Response.json({
-        message: `Hello, ${name}!`,
-      });
-    },
 
     // Credentials management (in-memory)
     "/api/credentials": {
@@ -98,7 +77,8 @@ const server = serve({
           return Response.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        if (!hasCredentials()) {
+        const credential = getCredentials()
+        if (!credential) {
           return Response.json(
             { error: "Credentials not configured" },
             { status: 401 }
@@ -106,7 +86,7 @@ const server = serve({
         }
 
         try {
-          const { token, expiresAt } = await getShortLivedToken();
+          const { token, expiresAt } = await generateToken(credential, 60 * 10);
           return Response.json({
             token,
             expiresAt: expiresAt.toISOString(),

@@ -38,8 +38,8 @@ export function useMusicKitEvents(): MusicKitEventState {
     if (musicKit.volume !== undefined) {
       setVolume(musicKit.volume);
     }
-    setQueue(musicKit.queue.items);
-    setQueuePosition(musicKit.queue.position);
+    setQueue(musicKit.queue?.items ?? []);
+    setQueuePosition(musicKit.queue?.position ?? 0);
 
     // Event handlers
     const handlePlaybackState = (e: { state: MusicKit.PlaybackStates }) => {
@@ -64,12 +64,12 @@ export function useMusicKitEvents(): MusicKitEventState {
       }
     };
 
-    const handleQueueChange = (e: { items: MusicKit.MediaItem[] }) => {
-      setQueue(e.items);
+    const handleQueueChange = (e: { items?: MusicKit.MediaItem[] }) => {
+      setQueue(e.items ?? []);
     };
 
-    const handleQueuePosition = (e: { position: number }) => {
-      setQueuePosition(e.position);
+    const handleQueuePosition = (e: { position?: number }) => {
+      setQueuePosition(e.position ?? 0);
     };
 
     // Subscribe to events

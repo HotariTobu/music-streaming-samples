@@ -5,14 +5,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { router } from "./routes";
 import "./index.css";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 export function App() {
   return (

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const credentialsSchema = z.object({
   teamId: z.string().min(1, "Team ID is required"),
@@ -17,25 +17,10 @@ const credentialsSchema = z.object({
 
 type CredentialsFormData = z.infer<typeof credentialsSchema>;
 
-interface CredentialsFormProps {
-  onConfigured: () => void;
-}
-
-export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<CredentialsFormData>({
-    resolver: zodResolver(credentialsSchema),
-  });
-
-  const onSubmit = async (data: CredentialsFormData) => {
-    setSubmitError(null);
-
-    try {
+export function CredentialsForm() {
+  const queryClient = useQueryClient()
+  const { mutate, error } = useMutation({
+    mutationFn: async (data: CredentialsFormData) => {
       const res = await fetch("/api/credentials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,12 +31,21 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
         const resData = await res.json();
         throw new Error(resData.error || "Failed to save credentials");
       }
-
-      onConfigured();
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Unknown error");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        "queryKey": ["/api/credentials"]
+      })
     }
-  };
+  })
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CredentialsFormData>({
+    resolver: zodResolver(credentialsSchema),
+  });
 
   return (
     <Card>
@@ -63,7 +57,7 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit(data => mutate(data))} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor="teamId">Team ID</Label>
           <Input
@@ -112,9 +106,9 @@ export function CredentialsForm({ onConfigured }: CredentialsFormProps) {
           </p>
         </div>
 
-        {submitError && (
+        {error && (
           <Alert variant="destructive">
-            <AlertDescription>{submitError}</AlertDescription>
+            <AlertDescription>{error.message}</AlertDescription>
           </Alert>
         )}
 

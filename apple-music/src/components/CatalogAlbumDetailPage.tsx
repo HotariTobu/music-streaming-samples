@@ -18,8 +18,6 @@ interface CatalogAlbumDetailPageProps {
 }
 
 export function CatalogAlbumDetailPage({ albumId, backTo }: CatalogAlbumDetailPageProps) {
-  const { isReady } = useMusicKit();
-
   const { data: album, isLoading } = useCatalogAlbum(albumId);
   const tracksQuery = useCatalogAlbumTracksInfinite(albumId);
   const playAlbum = usePlayAlbum();
@@ -41,7 +39,7 @@ export function CatalogAlbumDetailPage({ albumId, backTo }: CatalogAlbumDetailPa
   };
 
   // Loading (including MusicKit initialization)
-  if (isLoading || !isReady) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />

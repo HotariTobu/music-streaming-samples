@@ -31,7 +31,6 @@ export function LibraryPlaylistDetailEditPage({
   backTo,
 }: LibraryPlaylistDetailEditPageProps) {
   const navigate = useNavigate();
-  const { isReady } = useMusicKit();
   const { data: playlist, isLoading } = useLibraryPlaylist(playlistId);
   const updatePlaylist = useUpdatePlaylist();
 
@@ -57,7 +56,7 @@ export function LibraryPlaylistDetailEditPage({
     }, 1500);
   };
 
-  if (isLoading || !isReady) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />

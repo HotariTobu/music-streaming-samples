@@ -48,7 +48,7 @@ declare namespace MusicKit {
     skipToPreviousItem(): Promise<void>;
     seekToTime(time: number): Promise<void>;
     mute(): void;
-    unmute(): void;
+    unmute(): Promise<void>;
     setQueue(options: QueueOptions): Promise<Queue | void>;
     clearQueue(): Promise<Queue>;
     changeToMediaAtIndex(index: number): Promise<void>;
@@ -181,7 +181,7 @@ declare namespace MusicKit {
   enum PlaybackBitrate { STANDARD = 64, HIGH = 256 }
 
   function configure(options: ConfigureOptions): Promise<MusicKitInstance>;
-  function getInstance(): MusicKitInstance;
+  function getInstance(): MusicKitInstance | undefined;
 }
 
 interface Window {

@@ -12,8 +12,32 @@ const tabs = [
 ] as const;
 
 export function LibraryLayout() {
-  const { isAuthorized, authorize } = useMusicKit();
+  const { musicKit, isAuthorized } = useMusicKit();
   const location = useLocation();
+
+  const handleAuthorizeButtonClick = async () => {
+    if (!musicKit) {
+      console.warn("[MusicKit] Authorization skipped due no kit instance")
+      return
+    }
+
+    try {
+      await musicKit.authorize();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      const isCancellation = errorMessage.includes("AUTHORIZATION_ERROR") ||
+                             errorMessage.includes("Unauthorized") ||
+                             errorMessage.includes("cancelled") ||
+                             errorMessage.includes("canceled");
+
+      if (isCancellation) {
+        console.log("[MusicKit] Authorization canceled by user")
+        return;
+      }
+
+      console.error("[MusicKit] Authorization failed", err)
+    }
+  }
 
   if (!isAuthorized) {
     return (
@@ -28,7 +52,7 @@ export function LibraryLayout() {
             you need to authorize this app with your Apple Music account.
           </p>
           <Button
-            onClick={authorize}
+            onClick={handleAuthorizeButtonClick}
             className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
           >
             Authorize with Apple Music

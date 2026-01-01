@@ -15,7 +15,6 @@ interface LibraryPlaylistDetailPageProps {
 }
 
 export function LibraryPlaylistDetailPage({ playlistId, backTo }: LibraryPlaylistDetailPageProps) {
-  const { isReady } = useMusicKit();
   const { data: playlist, isLoading } = useLibraryPlaylist(playlistId);
   const tracksQuery = usePlaylistTracksInfinite(playlistId);
   const playSongs = usePlaySongs();
@@ -39,7 +38,7 @@ export function LibraryPlaylistDetailPage({ playlistId, backTo }: LibraryPlaylis
     }
   };
 
-  if (isLoading || !isReady) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -78,7 +77,7 @@ export function LibraryPlaylistDetailPage({ playlistId, backTo }: LibraryPlaylis
         <>
           {playlist.attributes.canEdit && (
             <Button variant="outline" size="icon" asChild>
-              <Link to={`/library/playlists/${playlistId}/edit`}>
+              <Link to="/library/playlists/$playlistId/edit" params={{ playlistId }}>
                 <Pencil className="h-4 w-4" />
               </Link>
             </Button>

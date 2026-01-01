@@ -7,231 +7,209 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-
-interface TokenInfo {
-  token: string;
-  expiresAt: Date;
-}
+import z from "zod";
 
 interface MusicKitContextValue {
-  isConfigured: boolean;
-  isReady: boolean;
-  isAuthorized: boolean;
-  error: string | null;
   musicKit: MusicKit.MusicKitInstance | null;
-  authorize: () => Promise<void>;
-  checkCredentials: () => Promise<void>;
+  isAuthorized: boolean;
+  configurationError: Error | null;
 }
 
 const MusicKitContext = createContext<MusicKitContextValue | null>(null);
 
-const TOKEN_REFRESH_THRESHOLD = 0.8; // Refresh at 80% of lifetime
 const APP_NAME = "Apple Music Sample";
 const APP_BUILD = "1.0.0";
+const TOKEN_CHECK_INTERVAL = 1000 * 60;
+// const TOKEN_CHECK_INTERVAL = 1000 * 60 * 5; // 5 minute
+const TOKEN_THRESHOLD = TOKEN_CHECK_INTERVAL * 2
+
+const getTokenResponseSchema = z.union([
+  z.object({
+    token: z.string(),
+    expiresAt: z.iso.datetime().transform(s => new Date(s))
+  }),
+  z.object({
+    error: z.string()
+  })
+])
 
 export function MusicKitProvider({ children }: { children: ReactNode }) {
-  const [isConfigured, setIsConfigured] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [musicKit, setMusicKit] = useState<MusicKit.MusicKitInstance | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [configurationError, setConfigurationError] = useState<Error | null>(null);
 
-  const tokenInfoRef = useRef<TokenInfo | null>(null);
-  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ref = useRef({
+    tokenExpiresAt: new Date(),
+    isReconfigurationRequired: false,
+    isReconfiguring: false,
+  });
 
-  // Fetch token from server
-  const fetchToken = useCallback(async (): Promise<TokenInfo> => {
-    const res = await fetch("/api/token");
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error || "Failed to fetch token");
-    }
-    const data = await res.json();
-    return {
-      token: data.token,
-      expiresAt: new Date(data.expiresAt),
-    };
-  }, []);
-
-  // Schedule token refresh
-  // Note: We only update the token reference, NOT reconfigure MusicKit
-  // Reconfiguring during playback interrupts the stream
-  const scheduleTokenRefresh = useCallback((tokenInfo: TokenInfo) => {
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-
-    const now = Date.now();
-    const expiresAt = tokenInfo.expiresAt.getTime();
-    const lifetime = expiresAt - now;
-    const refreshAt = lifetime * TOKEN_REFRESH_THRESHOLD;
-
-    if (refreshAt > 0) {
-      refreshTimeoutRef.current = setTimeout(async () => {
-        try {
-          console.log("[MusicKit] Refreshing token...");
-          const newTokenInfo = await fetchToken();
-          tokenInfoRef.current = newTokenInfo;
-
-          // Update meta tag for future API calls, but DON'T reconfigure
-          // MusicKit keeps the active session and playback alive
-          const meta = document.querySelector('meta[name="apple-music-developer-token"]') as HTMLMetaElement | null;
-          if (meta) {
-            meta.content = newTokenInfo.token;
-          }
-
-          console.log("[MusicKit] Token refreshed successfully (without reconfigure)");
-          scheduleTokenRefresh(newTokenInfo);
-        } catch (err) {
-          console.error("[MusicKit] Token refresh failed:", err);
-          setError(err instanceof Error ? err.message : "Token refresh failed");
-        }
-      }, refreshAt);
-    }
-  }, [fetchToken]);
-
-  // Check if credentials are configured
-  const checkCredentials = useCallback(async () => {
+  const configure = useCallback(async () => {
+    console.log("[MusicKit] Configuring...");
     try {
-      const res = await fetch("/api/credentials");
-      const data = await res.json();
-      setIsConfigured(data.configured);
+      const { token, expiresAt } = await fetchToken();
+      console.log("[MusicKit] Token fetched, expires:", expiresAt.toISOString());
 
-      if (data.configured) {
-        setError(null);
-      }
-    } catch {
-      setError("Failed to check credentials");
-    }
-  }, []);
-
-  // Initialize MusicKit
-  const initializeMusicKit = useCallback(async () => {
-    if (!isConfigured) return;
-
-    try {
-      // Fetch developer token first
-      const tokenInfo = await fetchToken();
-      tokenInfoRef.current = tokenInfo;
-
-      // Set meta tags for MusicKit configuration (before it loads)
-      const setMetaTag = (name: string, content: string) => {
-        let meta = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
-        if (!meta) {
-          meta = document.createElement("meta");
-          meta.name = name;
-          document.head.appendChild(meta);
-        }
-        meta.content = content;
-      };
-
-      setMetaTag("apple-music-developer-token", tokenInfo.token);
-      setMetaTag("apple-music-app-name", APP_NAME);
-      setMetaTag("apple-music-app-build", APP_BUILD);
-
-      // Wait for MusicKit to load via musickitloaded event
-      if (!window.MusicKit) {
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error("MusicKit failed to load"));
-          }, 10000);
-
-          document.addEventListener("musickitloaded", () => {
-            clearTimeout(timeout);
-            resolve();
-          }, { once: true });
-
-          // Also check if already loaded
-          if (window.MusicKit) {
-            clearTimeout(timeout);
-            resolve();
-          }
-        });
-      }
-
-      // Configure MusicKit (meta tags alone won't work if MusicKit already loaded)
-      await window.MusicKit.configure({
-        developerToken: tokenInfo.token,
+      const musicKit = await window.MusicKit.configure({
+        developerToken: token,
         app: { name: APP_NAME, build: APP_BUILD },
-      });
+      })
 
-      const instance = window.MusicKit.getInstance();
-      setMusicKit(instance);
-      setIsReady(true);
-      setIsAuthorized(instance.isAuthorized);
+      setMusicKit(musicKit);
+      setIsAuthorized(musicKit.isAuthorized);
+      setConfigurationError(null)
 
-      // Schedule token refresh
-      scheduleTokenRefresh(tokenInfo);
+      ref.current.tokenExpiresAt = expiresAt
 
-      // Listen for authorization changes
-      instance.addEventListener("authorizationStatusDidChange", () => {
-        // Use the isAuthorized property directly as per v3 docs
-        setIsAuthorized(instance.isAuthorized);
-      });
+      console.log("[MusicKit] Configured successfully");
+      return musicKit
 
-      console.log("[MusicKit] Initialized successfully");
     } catch (err) {
-      console.error("[MusicKit] Initialization failed:", err);
-      setError(err instanceof Error ? err.message : "MusicKit initialization failed");
-    }
-  }, [isConfigured, fetchToken, scheduleTokenRefresh]);
+      setMusicKit(null)
+      setIsAuthorized(false)
+      setConfigurationError(err instanceof Error ? err : new Error("Unexpected error"));
 
-  // Authorize user
-  const authorize = useCallback(async () => {
+      ref.current.tokenExpiresAt = new Date()
+
+      console.error("[MusicKit] Configuration failed:", err);
+      throw err
+    }
+  }, [])
+
+  const reconfigure = useCallback(async () => {
+    console.log("[MusicKit] Reconfiguring...");
     if (!musicKit) {
-      throw new Error("MusicKit not initialized");
-    }
+      throw new Error("MusicKit not configured")
+    };
 
-    try {
-      await musicKit.authorize();
-      setIsAuthorized(true);
-    } catch (err) {
-      // Check if this is a user cancellation (not a real error)
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      const isCancellation = errorMessage.includes("AUTHORIZATION_ERROR") ||
-                             errorMessage.includes("Unauthorized") ||
-                             errorMessage.includes("cancelled") ||
-                             errorMessage.includes("canceled");
+    // a. Capture restore data
+    const volume = musicKit.volume ?? 1;
+    const queueItems = musicKit.queue?.items ?? [];
+    const queuePosition = musicKit.queue?.position ?? 0;
+    const currentTime = musicKit.currentPlaybackTime ?? 0;
 
-      if (isCancellation) {
-        console.log("[MusicKit] Authorization cancelled by user");
-        return; // Don't throw - user cancelled intentionally
-      }
+    const songIds = queueItems
+      .filter((item) => item.type === "songs" || item.type === "song")
+      .map((item) => item.id);
 
-      console.error("[MusicKit] Authorization failed:", err);
-      throw err;
-    }
+    console.log("[MusicKit] Captured:", { volume, queuePosition, currentTime, queueLength: songIds.length });
+
+    // b. Reconfigure
+    await musicKit.stop()
+    const newMusicKit = await configure()
+
+    // c. Restore
+    newMusicKit.volume = volume;
+    await newMusicKit.setQueue({ songs: songIds });
+    await newMusicKit.changeToMediaAtIndex(queuePosition);
+    await newMusicKit.seekToTime(currentTime);
+    console.log("[MusicKit] Restored");
   }, [musicKit]);
 
-  // Check credentials on mount
   useEffect(() => {
-    checkCredentials();
-  }, [checkCredentials]);
+    document.addEventListener("credentialconfigured", configure);
+    return () => document.removeEventListener("credentialconfigured", configure)
+  }, [configure])
 
-  // Initialize MusicKit when configured
   useEffect(() => {
-    if (isConfigured && !isReady) {
-      initializeMusicKit();
+    console.log("[MusicKit] Reconfigure trigger registration", musicKit)
+    if (!musicKit) return
+
+    const triggerReconfigure = async ({ state }: { state: MusicKit.PlaybackStates }) => {
+      const { isReconfigurationRequired, isReconfiguring } = ref.current
+      if (!isReconfigurationRequired || isReconfiguring) return;
+
+      ref.current.isReconfiguring = true
+
+      switch (state) {
+        case MusicKit.PlaybackStates.ended:
+          musicKit.pause();
+          break;
+
+        case MusicKit.PlaybackStates.loading:
+        case MusicKit.PlaybackStates.playing:
+        case MusicKit.PlaybackStates.seeking:
+        case MusicKit.PlaybackStates.waiting:
+        case MusicKit.PlaybackStates.stalled:
+          return
+      }
+
+      console.log("[MusicKit] Triggering reconfigure, state:", state);
+      try {
+        await reconfigure();
+      } catch (err) {
+        console.error("[MusicKit] Reconfiguration failed", err)
+      }
+
+      switch (state) {
+        case MusicKit.PlaybackStates.ended:
+          console.log("[MusicKit] Resuming playback after ended");
+          await musicKit.play();
+          break;
+      }
+
+      ref.current.isReconfigurationRequired = false
+      ref.current.isReconfiguring = false
+      console.log("[MusicKit] Reconfiguration complete");
     }
-  }, [isConfigured, isReady, initializeMusicKit]);
 
-  // Cleanup on unmount
+    musicKit.addEventListener("playbackStateWillChange", triggerReconfigure);
+    return () => musicKit.removeEventListener("playbackStateWillChange", triggerReconfigure)
+  }, [musicKit, reconfigure])
+
   useEffect(() => {
-    return () => {
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
+    console.log("[MusicKit] Authorization listener registration", musicKit)
+    if (!musicKit) return
+
+    const setAuthorizationStatus = () => {
+      console.log("[MusicKit] Authorization changed", musicKit.isAuthorized)
+      setIsAuthorized(musicKit.isAuthorized);
+    }
+
+    musicKit.addEventListener("authorizationStatusDidChange", setAuthorizationStatus);
+    return () => musicKit.removeEventListener("authorizationStatusDidChange", setAuthorizationStatus)
+  }, [musicKit])
+
+  useEffect(() => {
+    console.log("[MusicKit] Token refresh polling", musicKit, TOKEN_CHECK_INTERVAL)
+    if (!musicKit) return
+
+    const checkAndRefresh = async () => {
+      const playingStateSet = new Set([
+        MusicKit.PlaybackStates.loading,
+        MusicKit.PlaybackStates.playing,
+        MusicKit.PlaybackStates.seeking,
+        MusicKit.PlaybackStates.waiting,
+        MusicKit.PlaybackStates.stalled,
+      ])
+
+      const { tokenExpiresAt } = ref.current
+      const lifetime = tokenExpiresAt.getTime() - new Date().getTime();
+      if (lifetime > TOKEN_THRESHOLD) {
+        return
+      }
+
+      if (playingStateSet.has(musicKit.playbackState)) {
+        console.log("[MusicKit] Token refresh queued (playing)");
+        ref.current.isReconfigurationRequired = true
+      } else {
+        console.log("[MusicKit] Token refresh now");
+        try {
+          await reconfigure();
+        } catch (err) {
+          console.error("Reconfiguration failed", err)
+        }
       }
     };
-  }, []);
+
+    const interval = setInterval(checkAndRefresh, TOKEN_CHECK_INTERVAL);
+    return () => clearInterval(interval);
+  }, [musicKit, reconfigure]);
 
   const value: MusicKitContextValue = {
-    isConfigured,
-    isReady,
-    isAuthorized,
-    error,
     musicKit,
-    authorize,
-    checkCredentials,
+    isAuthorized,
+    configurationError,
   };
 
   return (
@@ -247,4 +225,27 @@ export function useMusicKit() {
     throw new Error("useMusicKit must be used within a MusicKitProvider");
   }
   return context;
+}
+
+async function fetchToken() {
+  const res = await fetch("/api/token", { cache: "no-store" });
+
+  const rawData = await res.json()
+  const parseResult = getTokenResponseSchema.safeParse(rawData)
+
+  if (!parseResult.success) {
+    const details = JSON.stringify({
+      status: res.status,
+      parseError: parseResult.error
+    })
+    throw new Error(`Failed to fetch token: ${details}`)
+  }
+
+  const { data } = parseResult
+
+  if ("error" in data) {
+    throw new Error(data.error)
+  }
+
+  return data
 }

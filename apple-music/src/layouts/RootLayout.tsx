@@ -13,6 +13,9 @@ import {
   Lock,
   AlertTriangle,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import z from "zod";
+import { useEffect } from "react";
 
 const navItems: {
   to: string;
@@ -31,13 +34,65 @@ const navItems: {
   { to: "/player", label: "Player", icon: <Headphones className="h-4 w-4" /> },
 ];
 
+const getCredentialResponseSchema = z.object({
+  configured: z.boolean()
+})
+
 export function RootLayout() {
-  const { isConfigured, isReady, isAuthorized, error, authorize, checkCredentials } =
+  const { data: isCredentialConfigured, error: credentialError } = useQuery({
+    queryKey: ["/api/credentials"],
+    queryFn: async ({queryKey}) => {
+      const res = await fetch(queryKey[0]!)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch credential: ${res.status}`)
+      }
+
+      const rawData = await res.json()
+      const data = getCredentialResponseSchema.parse(rawData)
+      return data.configured
+    },
+  })
+
+  useEffect(() => {
+    if (!isCredentialConfigured) {
+      return
+    }
+
+    document.dispatchEvent(new Event("credentialconfigured"))
+  }, [isCredentialConfigured])
+
+  const { musicKit, isAuthorized, configurationError } =
     useMusicKit();
   const location = useLocation();
 
+  const error = credentialError ?? configurationError
+
+  const handleAuthorizeButtonClick = async () => {
+    if (!musicKit) {
+      console.warn("[MusicKit] Authorization skipped due no kit instance")
+      return
+    }
+
+    try {
+      await musicKit.authorize();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      const isCancellation = errorMessage.includes("AUTHORIZATION_ERROR") ||
+                             errorMessage.includes("Unauthorized") ||
+                             errorMessage.includes("cancelled") ||
+                             errorMessage.includes("canceled");
+
+      if (isCancellation) {
+        console.log("[MusicKit] Authorization canceled by user")
+        return;
+      }
+
+      console.error("[MusicKit] Authorization failed", err)
+    }
+  }
+
   // Not configured - show credentials form
-  if (!isConfigured) {
+  if (!isCredentialConfigured) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-lg">
@@ -53,7 +108,7 @@ export function RootLayout() {
               Enter your Apple Developer credentials to get started
             </p>
           </div>
-          <CredentialsForm onConfigured={checkCredentials} />
+          <CredentialsForm />
         </div>
       </div>
     );
@@ -67,21 +122,9 @@ export function RootLayout() {
           <CardContent className="pt-6">
             <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-destructive" />
             <h2 className="text-xl font-bold text-destructive mb-2">Error</h2>
-            <p className="text-muted-foreground">{error}</p>
+            <p className="text-muted-foreground">{error.message}</p>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
-
-  // Loading MusicKit
-  if (!isReady) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Initializing MusicKit...</p>
-        </div>
       </div>
     );
   }
@@ -115,7 +158,7 @@ export function RootLayout() {
               </div>
               {!isAuthorized && (
                 <Button
-                  onClick={authorize}
+                  onClick={handleAuthorizeButtonClick}
                   size="sm"
                   className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
                 >

@@ -15,7 +15,6 @@ interface CatalogPlaylistDetailPageProps {
 }
 
 export function CatalogPlaylistDetailPage({ playlistId, backTo }: CatalogPlaylistDetailPageProps) {
-  const { isReady } = useMusicKit();
   const { data: playlist, isLoading } = useCatalogPlaylist(playlistId);
   const tracksQuery = useCatalogPlaylistTracksInfinite(playlistId);
   const playPlaylist = usePlayPlaylist();
@@ -33,7 +32,7 @@ export function CatalogPlaylistDetailPage({ playlistId, backTo }: CatalogPlaylis
     if (playlist) playPlaylist(playlist.id, index);
   };
 
-  if (isLoading || !isReady) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
