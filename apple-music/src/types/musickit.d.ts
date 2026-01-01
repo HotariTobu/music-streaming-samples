@@ -94,14 +94,73 @@ declare namespace MusicKit {
   }
 
   interface Events {
+    // Authorization Events
     authorizationStatusDidChange: { authorizationStatus: number };
-    playbackStateDidChange: { oldState: PlaybackStates; state: PlaybackStates };
-    nowPlayingItemDidChange: { item: MediaItem | undefined };
+    authorizationStatusWillChange: { authorizationStatus: number };
+
+    // Playback State Events
+    playbackStateWillChange: {
+      oldState: PlaybackStates;
+      state: PlaybackStates;
+      nowPlayingItem: MediaItem | undefined;
+    };
+    playbackStateDidChange: {
+      oldState: PlaybackStates;
+      state: PlaybackStates;
+      nowPlayingItem: MediaItem | undefined;
+    };
     playbackTimeDidChange: { currentPlaybackTime: number };
     playbackDurationDidChange: { duration: number };
+    playbackProgressDidChange: { progress: number };
+    playbackBitrateDidChange: { bitrate: PlaybackBitrate };
+    playbackRateDidChange: { playbackRate: number };
     playbackVolumeDidChange: { volume: number };
+
+    // Now Playing Events
+    nowPlayingItemWillChange: { item: MediaItem | undefined };
+    nowPlayingItemDidChange: { item: MediaItem | undefined };
+    metadataDidChange: { item: MediaItem };
+
+    // Queue Events
+    queueIsReady: { queue: Queue };
     queueItemsDidChange: { items: MediaItem[] };
     queuePositionDidChange: { position: number };
+
+    // Mode Events
+    shuffleModeDidChange: { shuffleMode: PlayerShuffleMode };
+    repeatModeDidChange: { repeatMode: PlayerRepeatMode };
+
+    // Media Events
+    mediaCanPlay: Record<string, never>;
+    mediaElementCreated: { element: HTMLMediaElement };
+    mediaItemStateDidChange: { item: MediaItem; state: number };
+    mediaPlaybackError: { error: Error };
+    mediaUpNext: { item: MediaItem };
+
+    // Track Events
+    audioTrackAdded: { track: AudioTrack };
+    audioTrackChanged: { track: AudioTrack };
+    audioTrackRemoved: { track: AudioTrack };
+    textTrackAdded: { track: TextTrack };
+    textTrackChanged: { track: TextTrack };
+    textTrackRemoved: { track: TextTrack };
+
+    // Other Events
+    configured: { instance: MusicKitInstance };
+    loaded: Record<string, never>;
+    drmUnsupported: Record<string, never>;
+    capabilitiesChanged: { capabilities: unknown };
+    playerTypeDidChange: { playerType: string };
+    storefrontCountryCodeDidChange: { storefrontCountryCode: string };
+    storefrontIdentifierDidChange: { storefrontId: string };
+  }
+
+  interface AudioTrack {
+    readonly enabled: boolean;
+    readonly id: string;
+    readonly kind: string;
+    readonly label: string;
+    readonly language: string;
   }
 
   enum PlaybackStates {
